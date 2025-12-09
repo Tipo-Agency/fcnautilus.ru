@@ -86,9 +86,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
   body {
     /* Improved text contrast with darker foreground */
     @apply bg-white text-slate-900 font-sans leading-relaxed antialiased;
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
   }
   h1,
   h2,
@@ -97,9 +105,6 @@
   h5,
   h6 {
     @apply font-heading font-bold text-balance;
-  }
-  html {
-    scroll-behavior: smooth;
   }
 }
 

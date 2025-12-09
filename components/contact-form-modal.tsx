@@ -6,7 +6,6 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Loader2, CheckCircle } from "lucide-react"
@@ -22,7 +21,6 @@ export function ContactFormModal({ children }: ContactFormModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    comment: "",
     consent: false,
   })
 
@@ -57,7 +55,7 @@ export function ContactFormModal({ children }: ContactFormModalProps) {
     setTimeout(() => {
       setIsSuccess(false)
       setIsOpen(false)
-      setFormData({ name: "", phone: "", comment: "", consent: false })
+      setFormData({ name: "", phone: "", consent: false })
     }, 3000)
   }
 
@@ -74,8 +72,9 @@ export function ContactFormModal({ children }: ContactFormModalProps) {
         {isSuccess ? (
           <div className="text-center py-8">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h3 className="font-heading font-semibold text-lg mb-2">Заявка отправлена!</h3>
-            <p className="text-muted-foreground">Мы свяжемся с вами в ближайшее время</p>
+            <h3 className="font-heading font-semibold text-lg mb-2">Спасибо!</h3>
+            <p className="text-muted-foreground mb-2">Ваша заявка успешно отправлена.</p>
+            <p className="text-muted-foreground text-sm">Мы свяжемся с вами в ближайшее время</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -88,6 +87,7 @@ export function ContactFormModal({ children }: ContactFormModalProps) {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
+                autoComplete="name"
               />
             </div>
 
@@ -100,17 +100,7 @@ export function ContactFormModal({ children }: ContactFormModalProps) {
                 value={formData.phone}
                 onChange={handlePhoneChange}
                 required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="comment">Комментарий</Label>
-              <Textarea
-                id="comment"
-                placeholder="Расскажите о ваших целях или задайте вопрос"
-                value={formData.comment}
-                onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                rows={3}
+                autoComplete="tel"
               />
             </div>
 
@@ -144,3 +134,4 @@ export function ContactFormModal({ children }: ContactFormModalProps) {
     </Dialog>
   )
 }
+

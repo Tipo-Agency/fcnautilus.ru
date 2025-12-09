@@ -67,10 +67,10 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           <p className="text-slate-600 mb-4">Если проблема сохраняется, свяжитесь с нами:</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+74212000000"
+              href="tel:+74212456789"
               className="text-cyan-600 hover:text-cyan-700 font-medium transition-colors"
             >
-              +7 (4212) 00-00-00
+              +7 (4212) 45-67-89
             </a>
             <a
               href="mailto:support@nautilus-fitness.ru"

@@ -136,7 +136,7 @@ export default function PrivacyPage() {
                     <strong>Email:</strong> privacy@nautilus-fitness.ru
                   </p>
                   <p className="text-slate-700 mb-2">
-                    <strong>Телефон:</strong> +7 (4212) 00-00-00
+                    <strong>Телефон:</strong> +7 (4212) 45-67-89
                   </p>
                   <p className="text-slate-700">
                     <strong>Адрес:</strong> г. Хабаровск, ул. Суворова, 25а

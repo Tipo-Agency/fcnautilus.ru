@@ -1,43 +1,146 @@
+"use client"
+
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Clock, Users, MapPin, Smartphone } from "lucide-react"
+import Link from "next/link"
+import { BookingModal } from "@/components/booking-modal"
 
+// Преобразуем данные расписания в формат по дням недели
+const scheduleRows = [
+  {
+    time: "07:00 - 08:00",
+    monday: "Йога",
+    tuesday: "Пилатес",
+    wednesday: "Йога",
+    thursday: "Стретчинг",
+    friday: "Йога",
+    saturday: "Пилатес",
+    sunday: "-",
+  },
+  {
+    time: "08:00 - 09:00",
+    monday: "Аквааэробика",
+    tuesday: "Плавание",
+    wednesday: "Аквааэробика",
+    thursday: "Плавание",
+    friday: "Аквааэробика",
+    saturday: "Плавание",
+    sunday: "-",
+  },
+  {
+    time: "09:00 - 10:00",
+    monday: "Функциональный тренинг",
+    tuesday: "Силовая",
+    wednesday: "Функциональный тренинг",
+    thursday: "Силовая",
+    friday: "Функциональный тренинг",
+    saturday: "Групповая",
+    sunday: "Йога",
+  },
+  {
+    time: "10:00 - 11:00",
+    monday: "Зумба",
+    tuesday: "Степ-аэробика",
+    wednesday: "Зумба",
+    thursday: "Степ-аэробика",
+    friday: "Зумба",
+    saturday: "Танцы",
+    sunday: "Пилатес",
+  },
+  {
+    time: "18:00 - 19:00",
+    monday: "Бокс",
+    tuesday: "Кроссфит",
+    wednesday: "Бокс",
+    thursday: "Кроссфит",
+    friday: "Бокс",
+    saturday: "Функциональный",
+    sunday: "-",
+  },
+  {
+    time: "19:00 - 20:00",
+    monday: "Йога",
+    tuesday: "Пилатес",
+    wednesday: "Йога",
+    thursday: "Стретчинг",
+    friday: "Йога",
+    saturday: "Пилатес",
+    sunday: "-",
+  },
+  {
+    time: "20:00 - 21:00",
+    monday: "Плавание",
+    tuesday: "Аквааэробика",
+    wednesday: "Плавание",
+    thursday: "Аквааэробика",
+    friday: "Плавание",
+    saturday: "-",
+    sunday: "-",
+  },
+]
+
+// Преобразуем в формат по дням недели
 const scheduleData = {
-  monday: [
-    { time: "07:00", activity: "Плавание", trainer: "Дмитрий Волков", level: "Все уровни", room: "Бассейн" },
-    { time: "09:00", activity: "Силовая тренировка", trainer: "Анна Петрова", level: "Начинающие", room: "Зал №1" },
-    { time: "11:00", activity: "Аквааэробика", trainer: "Дмитрий Волков", level: "Все уровни", room: "Бассейн" },
-    { time: "18:00", activity: "Йога", trainer: "Елена Смирнова", level: "Все уровни", room: "Зал йоги" },
-    { time: "19:30", activity: "Бокс", trainer: "Максим Козлов", level: "Продвинутые", room: "Зал единоборств" },
-  ],
-  tuesday: [
-    {
-      time: "08:00",
-      activity: "Детское плавание",
-      trainer: "Ольга Иванова",
-      level: "Дети 6-12 лет",
-      room: "Детский бассейн",
-    },
-    { time: "10:00", activity: "Пилатес", trainer: "Елена Смирнова", level: "Все уровни", room: "Зал йоги" },
-    { time: "12:00", activity: "Функциональный тренинг", trainer: "Анна Петрова", level: "Средний", room: "Зал №2" },
-    { time: "17:00", activity: "Групповая тренировка", trainer: "Сергей Морозов", level: "Все уровни", room: "Зал №1" },
-    { time: "19:00", activity: "Кикбоксинг", trainer: "Максим Козлов", level: "Начинающие", room: "Зал единоборств" },
-  ],
-  wednesday: [
-    { time: "07:30", activity: "Плавание", trainer: "Дмитрий Волков", level: "Все уровни", room: "Бассейн" },
-    { time: "09:30", activity: "Стретчинг", trainer: "Елена Смирнова", level: "Все уровни", room: "Зал йоги" },
-    { time: "11:30", activity: "Силовая тренировка", trainer: "Анна Петрова", level: "Продвинутые", room: "Зал №1" },
-    {
-      time: "16:00",
-      activity: "Детская гимнастика",
-      trainer: "Ольга Иванова",
-      level: "Дети 3-6 лет",
-      room: "Детская зона",
-    },
-    { time: "18:30", activity: "Аквааэробика", trainer: "Дмитрий Волков", level: "Все уровни", room: "Бассейн" },
-  ],
+  monday: scheduleRows
+    .filter((row) => row.monday !== "-")
+    .map((row) => ({
+      time: row.time,
+      activity: row.monday,
+      level: "Все уровни",
+      day: "monday",
+    })),
+  tuesday: scheduleRows
+    .filter((row) => row.tuesday !== "-")
+    .map((row) => ({
+      time: row.time,
+      activity: row.tuesday,
+      level: "Все уровни",
+      day: "tuesday",
+    })),
+  wednesday: scheduleRows
+    .filter((row) => row.wednesday !== "-")
+    .map((row) => ({
+      time: row.time,
+      activity: row.wednesday,
+      level: "Все уровни",
+      day: "wednesday",
+    })),
+  thursday: scheduleRows
+    .filter((row) => row.thursday !== "-")
+    .map((row) => ({
+      time: row.time,
+      activity: row.thursday,
+      level: "Все уровни",
+      day: "thursday",
+    })),
+  friday: scheduleRows
+    .filter((row) => row.friday !== "-")
+    .map((row) => ({
+      time: row.time,
+      activity: row.friday,
+      level: "Все уровни",
+      day: "friday",
+    })),
+  saturday: scheduleRows
+    .filter((row) => row.saturday !== "-")
+    .map((row) => ({
+      time: row.time,
+      activity: row.saturday,
+      level: "Все уровни",
+      day: "saturday",
+    })),
+  sunday: scheduleRows
+    .filter((row) => row.sunday !== "-")
+    .map((row) => ({
+      time: row.time,
+      activity: row.sunday,
+      level: "Все уровни",
+      day: "sunday",
+    })),
 }
 
 const appFeatures = [
@@ -59,6 +162,14 @@ const appFeatures = [
 ]
 
 export function ScheduleSection() {
+  const [selectedActivity, setSelectedActivity] = useState<typeof scheduleData.monday[0] | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleBook = (activity: typeof scheduleData.monday[0]) => {
+    setSelectedActivity(activity)
+    setIsModalOpen(true)
+  }
+
   return (
     <section id="schedule" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -75,46 +186,155 @@ export function ScheduleSection() {
 
           {/* Schedule Tabs */}
           <div className="mb-16">
-            <Tabs defaultValue="monday" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
-                <TabsTrigger value="monday">Понедельник</TabsTrigger>
-                <TabsTrigger value="tuesday">Вторник</TabsTrigger>
-                <TabsTrigger value="wednesday">Среда</TabsTrigger>
+            <Tabs defaultValue="monday" className="w-full" orientation="horizontal">
+              <TabsList 
+                className="flex w-full md:grid md:grid-cols-7 mb-8 gap-1"
+                role="tablist"
+                aria-label="Выбор дня недели для просмотра расписания"
+              >
+                <TabsTrigger 
+                  value="monday" 
+                  id="tab-monday"
+                  className="flex-1 md:flex-none text-xs md:text-sm px-2 md:px-2"
+                  aria-label="Понедельник"
+                  aria-controls="tabpanel-monday"
+                >
+                  Пн
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tuesday" 
+                  id="tab-tuesday"
+                  className="flex-1 md:flex-none text-xs md:text-sm px-2 md:px-2"
+                  aria-label="Вторник"
+                  aria-controls="tabpanel-tuesday"
+                >
+                  Вт
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="wednesday" 
+                  id="tab-wednesday"
+                  className="flex-1 md:flex-none text-xs md:text-sm px-2 md:px-2"
+                  aria-label="Среда"
+                  aria-controls="tabpanel-wednesday"
+                >
+                  Ср
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="thursday" 
+                  id="tab-thursday"
+                  className="flex-1 md:flex-none text-xs md:text-sm px-2 md:px-2"
+                  aria-label="Четверг"
+                  aria-controls="tabpanel-thursday"
+                >
+                  Чт
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="friday" 
+                  id="tab-friday"
+                  className="flex-1 md:flex-none text-xs md:text-sm px-2 md:px-2"
+                  aria-label="Пятница"
+                  aria-controls="tabpanel-friday"
+                >
+                  Пт
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="saturday" 
+                  id="tab-saturday"
+                  className="flex-1 md:flex-none text-xs md:text-sm px-2 md:px-2"
+                  aria-label="Суббота"
+                  aria-controls="tabpanel-saturday"
+                >
+                  Сб
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="sunday" 
+                  id="tab-sunday"
+                  className="flex-1 md:flex-none text-xs md:text-sm px-2 md:px-2"
+                  aria-label="Воскресенье"
+                  aria-controls="tabpanel-sunday"
+                >
+                  Вс
+                </TabsTrigger>
               </TabsList>
 
-              {Object.entries(scheduleData).map(([day, activities]) => (
-                <TabsContent key={day} value={day}>
-                  <div className="grid gap-4">
-                    {activities.map((activity, index) => (
-                      <Card key={index} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <div className="text-2xl font-bold text-primary min-w-[60px]">{activity.time}</div>
-                              <div>
-                                <h3 className="font-heading font-semibold text-lg">{activity.activity}</h3>
-                                <p className="text-muted-foreground text-sm">Тренер: {activity.trainer}</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Badge variant="secondary" className="text-xs">
-                                    {activity.level}
-                                  </Badge>
-                                  <Badge variant="outline" className="text-xs">
-                                    {activity.room}
-                                  </Badge>
+              {Object.entries(scheduleData).map(([day, activities]) => {
+                const dayNames: Record<string, string> = {
+                  monday: "Понедельник",
+                  tuesday: "Вторник",
+                  wednesday: "Среда",
+                  thursday: "Четверг",
+                  friday: "Пятница",
+                  saturday: "Суббота",
+                  sunday: "Воскресенье",
+                }
+                return (
+                  <TabsContent 
+                    key={day} 
+                    value={day}
+                    role="tabpanel"
+                    aria-labelledby={`tab-${day}`}
+                    id={`tabpanel-${day}`}
+                    tabIndex={-1}
+                  >
+                    {activities.length > 0 ? (
+                      <div className="grid gap-4" role="list">
+                        {activities.map((activity, index) => (
+                          <Card 
+                            key={index} 
+                            className="hover:shadow-md transition-shadow"
+                            role="listitem"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="text-xl font-bold text-primary min-w-[120px]" aria-label={`Время: ${activity.time}`}>
+                                    {activity.time}
+                                  </div>
+                                  <div>
+                                    <h3 className="font-heading font-semibold text-lg">{activity.activity}</h3>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <Badge variant="secondary" className="text-xs" aria-label={`Уровень: ${activity.level}`}>
+                                        {activity.level}
+                                      </Badge>
+                                    </div>
+                                  </div>
                                 </div>
+                                <Button 
+                                  size="sm" 
+                                  className="md:min-w-[120px]"
+                                  onClick={() => handleBook(activity)}
+                                  aria-label={`Записаться на ${activity.activity} в ${activity.time}`}
+                                >
+                                  Записаться
+                                </Button>
                               </div>
-                            </div>
-                            <Button size="sm" className="md:min-w-[120px]">
-                              Записаться
-                            </Button>
-                          </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card>
+                        <CardContent className="p-8 text-center text-muted-foreground" role="status" aria-live="polite">
+                          В этот день занятий нет
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
-                </TabsContent>
-              ))}
+                    )}
+                  </TabsContent>
+                )
+              })}
             </Tabs>
+          </div>
+
+          {/* CTA Section */}
+          <div className="text-center mb-8">
+            <Link href="/schedule">
+              <Button 
+                size="lg" 
+                className="w-full sm:w-auto bg-cyan-700 hover:bg-cyan-800 text-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 rounded-full text-sm sm:text-base md:text-lg font-semibold transition-all duration-200"
+              >
+                Посмотреть полное расписание
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile App CTA */}
@@ -137,11 +357,19 @@ export function ScheduleSection() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="outline" className="bg-black text-white hover:bg-black/90">
+                <Button 
+                  variant="outline" 
+                  className="bg-black text-white hover:bg-gray-900 font-medium"
+                  onClick={() => window.open("https://apps.apple.com/ru/app/наутилус-фитнес/id6504984719", "_blank")}
+                >
                   <Smartphone className="w-4 h-4 mr-2" />
                   App Store
                 </Button>
-                <Button variant="outline" className="bg-green-600 text-white hover:bg-green-600/90">
+                <Button 
+                  variant="outline" 
+                  className="bg-green-700 text-white hover:bg-green-800 font-medium"
+                  onClick={() => window.open("https://play.google.com/store/apps/details?id=fit.nautilus.app&hl=ru", "_blank")}
+                >
                   <Smartphone className="w-4 h-4 mr-2" />
                   Google Play
                 </Button>
@@ -150,6 +378,15 @@ export function ScheduleSection() {
           </Card>
         </div>
       </div>
+
+      {/* Модальное окно для записи */}
+      {selectedActivity && (
+        <BookingModal
+          isOpen={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          activity={selectedActivity}
+        />
+      )}
     </section>
   )
 }

@@ -1,13 +1,18 @@
+"use client"
+
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Gift, Users, Zap } from "lucide-react"
+import Image from "next/image"
+import { PromoModal } from "@/components/promo-modal"
 
 const promotions = [
   {
     title: "60 дней в подарок",
     description: "При покупке годового абонемента получите 2 месяца бесплатно",
-    validUntil: "31 декабря 2024",
+    validUntil: "31 марта 2026",
     image: "/fitness-promotion-gift.jpg",
     badge: "Хит",
     icon: Gift,
@@ -43,6 +48,13 @@ const promotions = [
 ]
 
 export function PromoSection() {
+  const [selectedPromo, setSelectedPromo] = useState<typeof promotions[0] | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleLearnMore = (promo: typeof promotions[0]) => {
+    setSelectedPromo(promo)
+    setIsModalOpen(true)
+  }
   return (
     <section id="promo" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -63,11 +75,13 @@ export function PromoSection() {
               <Card key={index} className="group overflow-hidden hover:shadow-xl transition-all duration-300 relative">
                 <div className={`absolute inset-0 ${promo.color} opacity-50`} />
                 <div className="relative">
-                  <div className="aspect-video overflow-hidden">
-                    <img
+                  <div className="aspect-video overflow-hidden relative">
+                    <Image
                       src={promo.image || "/placeholder.svg"}
                       alt={promo.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, 50vw"
                     />
                   </div>
                   <CardHeader className="pb-4">
@@ -86,7 +100,9 @@ export function PromoSection() {
                         <Calendar className="w-4 h-4" />
                         <span>{promo.validUntil}</span>
                       </div>
-                      <Button size="sm">Узнать условия</Button>
+                      <Button size="sm" onClick={() => handleLearnMore(promo)}>
+                        Узнать условия
+                      </Button>
                     </div>
                   </CardContent>
                 </div>
@@ -103,6 +119,15 @@ export function PromoSection() {
           </div>
         </div>
       </div>
+
+      {/* Модальное окно для акций */}
+      {selectedPromo && (
+        <PromoModal
+          isOpen={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          promo={selectedPromo}
+        />
+      )}
     </section>
   )
 }

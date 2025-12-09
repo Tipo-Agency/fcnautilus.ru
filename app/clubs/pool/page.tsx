@@ -3,6 +3,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { PurchaseModal } from "@/components/purchase-modal"
 import Image from "next/image"
 import {
   MapPin,
@@ -96,16 +97,20 @@ export default function PoolClubPage() {
               Олимпийский бассейн 50 метров под открытым небом с подогревом воды
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8">
-                Купить абонемент
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 rounded-full px-8"
-              >
-                Записаться на занятие
-              </Button>
+              <PurchaseModal>
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8">
+                  Купить абонемент
+                </Button>
+              </PurchaseModal>
+              <PurchaseModal>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 rounded-full px-8"
+                >
+                  Записаться на занятие
+                </Button>
+              </PurchaseModal>
             </div>
           </div>
         </div>
@@ -130,8 +135,8 @@ export default function PoolClubPage() {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Телефон</p>
-                <a href="tel:+74212000003" className="font-semibold text-slate-900 hover:text-blue-600">
-                  +7 (4212) 00-00-03
+                <a href="tel:+74212950938" className="font-semibold text-slate-900 hover:text-blue-600">
+                  +7 (4212) 95-09-38
                 </a>
               </div>
             </div>
@@ -191,6 +196,7 @@ export default function PoolClubPage() {
                   alt={`Gallery ${idx + 1}`}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  sizes="(max-width: 768px) 50vw, 33vw"
                 />
               </div>
             ))}
@@ -245,6 +251,7 @@ export default function PoolClubPage() {
                     alt={trainer.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </div>
                 <CardContent className="p-6">
@@ -318,22 +325,26 @@ export default function PoolClubPage() {
             Приходите и наслаждайтесь плаванием под открытым небом в любую погоду!
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-10 py-6 text-lg">
-              Купить абонемент
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-white text-slate-900 hover:bg-slate-100 rounded-full px-10 py-6 text-lg"
-            >
-              Записаться на занятие
-            </Button>
+            <PurchaseModal>
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-10 py-6 text-lg">
+                Купить абонемент
+              </Button>
+            </PurchaseModal>
+            <PurchaseModal>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white text-slate-900 hover:bg-slate-100 rounded-full px-10 py-6 text-lg"
+              >
+                Записаться на занятие
+              </Button>
+            </PurchaseModal>
           </div>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-8 justify-center items-center">
-            <a href="tel:+74212000003" className="flex items-center gap-3 text-white/80 hover:text-white">
+            <a href="tel:+74212950938" className="flex items-center gap-3 text-white/80 hover:text-white">
               <Phone className="w-5 h-5" />
-              <span className="text-lg">+7 (4212) 00-00-03</span>
+              <span className="text-lg">+7 (4212) 95-09-38</span>
             </a>
             <a href="mailto:pool@nautilus-fitness.ru" className="flex items-center gap-3 text-white/80 hover:text-white">
               <Mail className="w-5 h-5" />

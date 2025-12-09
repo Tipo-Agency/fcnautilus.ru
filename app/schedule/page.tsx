@@ -2,6 +2,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PurchaseModal } from "@/components/purchase-modal"
 
 export default function SchedulePage() {
   const schedule = [
@@ -142,10 +143,12 @@ export default function SchedulePage() {
             </TabsContent>
           </Tabs>
 
-          <div className="text-center mt-12">
-            <Button className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-6 rounded-full text-lg">
-              Записаться на занятие
-            </Button>
+          <div className="text-center mt-12 px-4">
+            <PurchaseModal>
+              <Button className="w-full sm:w-auto bg-cyan-700 hover:bg-cyan-800 text-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 rounded-full text-sm sm:text-base md:text-lg font-semibold transition-all duration-200">
+                Записаться на занятие
+              </Button>
+            </PurchaseModal>
           </div>
         </div>
       </div>

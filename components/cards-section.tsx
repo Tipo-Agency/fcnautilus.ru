@@ -104,7 +104,7 @@ export function CardsSection() {
                 }`}
               >
                 {card.badge && (
-                  <Badge className="absolute top-4 right-4 bg-cyan-600 text-white rounded-full px-3 py-1 text-xs font-medium">
+                  <Badge className="absolute top-4 right-4 bg-cyan-700 text-white rounded-full px-3 py-1 text-xs font-semibold">
                     {card.badge}
                   </Badge>
                 )}
@@ -128,9 +128,9 @@ export function CardsSection() {
                     ))}
                   </ul>
                   <Button
-                    className={`w-full mt-4 rounded-xl py-5 font-medium ${
+                    className={`w-full mt-4 rounded-xl py-5 font-semibold ${
                       card.highlight
-                        ? "bg-cyan-600 hover:bg-cyan-700 text-white"
+                        ? "bg-cyan-700 hover:bg-cyan-800 text-white"
                         : "bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200"
                     }`}
                   >

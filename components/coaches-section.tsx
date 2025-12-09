@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, Calendar } from "lucide-react"
+import Image from "next/image"
 
 const coaches = [
   {
@@ -79,11 +80,13 @@ export function CoachesSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {coaches.map((coach, index) => (
               <Card key={index} className="group overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="aspect-square overflow-hidden">
-                  <img
+                <div className="aspect-square overflow-hidden relative">
+                  <Image
                     src={coach.photo || "/placeholder.svg"}
                     alt={coach.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
                 <CardContent className="p-6">

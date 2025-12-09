@@ -71,7 +71,7 @@ export function AboutSection() {
 
           {/* CTA */}
           <div className="text-center">
-            <Button size="lg" className="px-10 py-6 text-lg bg-cyan-600 hover:bg-cyan-700 rounded-xl">
+            <Button size="lg" className="px-10 py-6 text-lg bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl font-semibold">
               Получить предложение
             </Button>
           </div>

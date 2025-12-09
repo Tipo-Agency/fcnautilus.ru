@@ -13,7 +13,7 @@ const clubs = [
     tagline: "Флагманский клуб премиум-класса",
     address: "ул. Суворова, 25а",
     hours: "Пн-Вс: 06:00 - 24:00",
-    phone: "+7 (4212) 00-00-01",
+    phone: "+7 (4212) 95-09-38",
     image: "/modern-swimming-pool-with-clear-blue-water-and-fit.jpg",
     features: ["Бассейн 25м", "Термальный комплекс", "Детский клуб", "SPA-зона"],
     area: "8 000 м²",
@@ -25,7 +25,7 @@ const clubs = [
     tagline: "Фитнес на природе",
     address: "Загородное шоссе, 15",
     hours: "Пн-Вс: 07:00 - 23:00",
-    phone: "+7 (4212) 00-00-02",
+    phone: "+7 (4212) 95-09-38",
     image: "/modern-gym-equipment.png",
     features: ["Панорамные окна", "Кардио-зона", "Групповые программы", "Кафе"],
     area: "5 500 м²",
@@ -37,7 +37,7 @@ const clubs = [
     tagline: "Плавание под открытым небом",
     address: "ул. Тихоокеанская, 88",
     hours: "Май-Сентябрь: 08:00 - 22:00",
-    phone: "+7 (4212) 00-00-03",
+    phone: "+7 (4212) 95-09-38",
     image: "/modern-swimming-pool-interior.jpg",
     features: ["Олимпийский бассейн 50м", "Детская зона", "Шезлонги", "Раздевалки"],
     area: "3 000 м²",
@@ -46,20 +46,20 @@ const clubs = [
 
 export function ClubsSection() {
   return (
-    <section id="clubs" className="py-24 lg:py-32 relative overflow-hidden">
+    <section id="clubs" className="py-24 lg:py-32 relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-cyan-50/30">
       {/* Background effects */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="text-center mb-16">
           <span className="text-sm uppercase tracking-widest text-primary font-medium mb-4 block">Наши клубы</span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-foreground mb-6">
             Выберите свой клуб
           </h2>
-          <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
+          <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
             Три уникальных локации с современным оборудованием и профессиональными тренерами
           </p>
         </div>
@@ -77,6 +77,7 @@ export function ClubsSection() {
                   alt={club.name}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  sizes="(max-width: 1024px) 100vw, 33vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                 <div className="absolute top-4 right-4 glass-strong px-4 py-2 rounded-full">
@@ -85,19 +86,19 @@ export function ClubsSection() {
               </div>
 
               <div className="p-6">
-                <h3 className="text-2xl font-heading font-bold text-white mb-2">{club.name}</h3>
+                <h3 className="text-2xl font-heading font-bold text-foreground mb-2">{club.name}</h3>
                 <p className="text-sm text-primary mb-4">{club.tagline}</p>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-start gap-3 text-sm text-foreground/60">
+                  <div className="flex items-start gap-3 text-sm text-foreground/70">
                     <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
                     <span>{club.address}</span>
                   </div>
-                  <div className="flex items-start gap-3 text-sm text-foreground/60">
+                  <div className="flex items-start gap-3 text-sm text-foreground/70">
                     <Clock className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
                     <span>{club.hours}</span>
                   </div>
-                  <div className="flex items-start gap-3 text-sm text-foreground/60">
+                  <div className="flex items-start gap-3 text-sm text-foreground/70">
                     <Phone className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
                     <span>{club.phone}</span>
                   </div>
@@ -105,7 +106,7 @@ export function ClubsSection() {
 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {club.features.map((feature) => (
-                    <span key={feature} className="glass-strong px-3 py-1 rounded-full text-xs text-foreground/70">
+                    <span key={feature} className="glass-strong px-3 py-1 rounded-full text-xs text-foreground/80">
                       {feature}
                     </span>
                   ))}

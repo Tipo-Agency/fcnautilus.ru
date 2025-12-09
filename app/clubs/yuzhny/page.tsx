@@ -3,6 +3,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { PurchaseModal } from "@/components/purchase-modal"
 import Image from "next/image"
 import {
   MapPin,
@@ -88,16 +89,20 @@ export default function YuzhnyClubPage() {
               Премиальный фитнес-клуб с бассейном, термальным комплексом и детским клубом
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-full px-8">
-                Купить абонемент
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 rounded-full px-8"
-              >
-                Записаться на тренировку
-              </Button>
+              <PurchaseModal>
+                <Button size="lg" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-full px-8">
+                  Купить абонемент
+                </Button>
+              </PurchaseModal>
+              <PurchaseModal>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 rounded-full px-8"
+                >
+                  Записаться на тренировку
+                </Button>
+              </PurchaseModal>
             </div>
           </div>
         </div>
@@ -122,8 +127,8 @@ export default function YuzhnyClubPage() {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Телефон</p>
-                <a href="tel:+74212000001" className="font-semibold text-slate-900 hover:text-cyan-600">
-                  +7 (4212) 00-00-01
+                <a href="tel:+74212950938" className="font-semibold text-slate-900 hover:text-cyan-600">
+                  +7 (4212) 95-09-38
                 </a>
               </div>
             </div>
@@ -182,7 +187,13 @@ export default function YuzhnyClubPage() {
               "/martial-arts-training.jpg",
             ].map((image, idx) => (
               <div key={idx} className="relative h-64 rounded-2xl overflow-hidden group cursor-pointer">
-                <Image src={image} alt={`Gallery ${idx + 1}`} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                <Image 
+                  src={image} 
+                  alt={`Gallery ${idx + 1}`} 
+                  fill 
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
               </div>
             ))}
           </div>
@@ -208,6 +219,7 @@ export default function YuzhnyClubPage() {
                     alt={trainer.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 1024px) 50vw, 25vw"
                   />
                 </div>
                 <CardContent className="p-6">
@@ -278,22 +290,26 @@ export default function YuzhnyClubPage() {
             Приходите на бесплатную экскурсию и первую тренировку. Убедитесь сами в качестве нашего сервиса!
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-full px-10 py-6 text-lg">
-              Купить абонемент
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-white text-slate-900 hover:bg-slate-100 rounded-full px-10 py-6 text-lg"
-            >
-              Записаться на экскурсию
-            </Button>
+            <PurchaseModal>
+              <Button size="lg" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-full px-10 py-6 text-lg">
+                Купить абонемент
+              </Button>
+            </PurchaseModal>
+            <PurchaseModal>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white text-slate-900 hover:bg-slate-100 rounded-full px-10 py-6 text-lg"
+              >
+                Записаться на экскурсию
+              </Button>
+            </PurchaseModal>
           </div>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-8 justify-center items-center">
-            <a href="tel:+74212000001" className="flex items-center gap-3 text-white/80 hover:text-white">
+            <a href="tel:+74212950938" className="flex items-center gap-3 text-white/80 hover:text-white">
               <Phone className="w-5 h-5" />
-              <span className="text-lg">+7 (4212) 00-00-01</span>
+              <span className="text-lg">+7 (4212) 95-09-38</span>
             </a>
             <a href="mailto:yuzhny@nautilus-fitness.ru" className="flex items-center gap-3 text-white/80 hover:text-white">
               <Mail className="w-5 h-5" />

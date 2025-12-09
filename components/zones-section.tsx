@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Waves, Dumbbell, Users, Zap, Baby, Flower2 } from "lucide-react"
+import { Waves, Dumbbell, Users, Zap, Baby, Flower2, ArrowRight } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 const zones = [
   {
@@ -10,6 +12,7 @@ const zones = [
     description: "25-метровый бассейн, сауна, хаммам и зона релаксации для полного восстановления",
     features: ["Бассейн 25м", "Сауна", "Хаммам", "Зона отдыха"],
     image: "/modern-swimming-pool-interior.jpg",
+    slug: "pool",
   },
   {
     icon: Dumbbell,
@@ -17,6 +20,7 @@ const zones = [
     description: "Современные тренажеры и свободные веса для силовых тренировок любого уровня",
     features: ["Кардио-зона", "Силовые тренажеры", "Свободные веса", "Функциональная зона"],
     image: "/modern-gym-equipment.png",
+    slug: "gym",
   },
   {
     icon: Users,
@@ -24,6 +28,7 @@ const zones = [
     description: "Более 50 направлений: от классической аэробики до современных танцевальных программ",
     features: ["Аэробика", "Танцы", "Степ", "Силовые классы"],
     image: "/group-fitness-class.png",
+    slug: "group-programs",
   },
   {
     icon: Zap,
@@ -31,6 +36,7 @@ const zones = [
     description: "Тренировки по различным единоборствам для развития силы, выносливости и самодисциплины",
     features: ["Бокс", "Кикбоксинг", "Карате", "Самооборона"],
     image: "/martial-arts-training.jpg",
+    slug: "martial-arts",
   },
   {
     icon: Baby,
@@ -38,6 +44,7 @@ const zones = [
     description: "Специальные программы для детей разных возрастов с профессиональными инструкторами",
     features: ["Плавание", "Гимнастика", "Игровые программы", "Развивающие занятия"],
     image: "/kids-swimming-pool.jpg",
+    slug: "kids-club",
   },
   {
     icon: Flower2,
@@ -45,6 +52,7 @@ const zones = [
     description: "Занятия для развития гибкости, баланса и внутренней гармонии в спокойной атмосфере",
     features: ["Хатха-йога", "Виньяса", "Пилатес", "Медитация"],
     image: "/peaceful-yoga-studio.png",
+    slug: "yoga-pilates",
   },
 ]
 
@@ -67,11 +75,13 @@ export function ZonesSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {zones.map((zone, index) => (
               <Card key={index} className="group overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="aspect-video overflow-hidden">
-                  <img
+                <div className="aspect-video overflow-hidden relative">
+                  <Image
                     src={zone.image || "/placeholder.svg"}
                     alt={zone.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
                 <CardHeader className="pb-4">
@@ -91,9 +101,16 @@ export function ZonesSection() {
                       </Badge>
                     ))}
                   </div>
-                  <Button variant="outline" size="sm" className="w-full bg-transparent">
-                    Подробнее
-                  </Button>
+                  <Link href={`/services#${zone.slug}`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-transparent group-hover:bg-primary/10 group-hover:border-primary/50 transition-all"
+                    >
+                      Подробнее
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
