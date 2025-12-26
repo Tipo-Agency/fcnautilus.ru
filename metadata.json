@@ -1,0 +1,7 @@
+{
+  "name": "Nautilus Fitness Network",
+  "description": "Premium family fitness club network in Khabarovsk featuring advanced scheduling, online membership purchase, and personal training management.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
