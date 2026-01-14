@@ -83,12 +83,12 @@ const Home: React.FC = () => {
                   ПРИСОЕДИНИТЬСЯ К КЛУБУ
                 </span>
               </button>
-              <button className="flex items-center gap-4 group">
+              <Link to="/tour3d" className="flex items-center gap-4 group">
                 <span className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
                   <Play fill="currentColor" size={24}/>
                 </span>
-                <span className="font-bold tracking-widest text-sm uppercase italic">СМОТРЕТЬ ФИЛЬМ</span>
-              </button>
+                <span className="font-bold tracking-widest text-sm uppercase italic">СМОТРЕТЬ 3D ТУР</span>
+              </Link>
             </div>
           </motion.div>
         </div>

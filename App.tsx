@@ -16,6 +16,7 @@ import News from './pages/News';
 import Legal from './pages/Legal';
 import Policy from './pages/Policy';
 import Rules from './pages/Rules';
+import Tour3D from './pages/Tour3D';
 
 const About = () => <div className="py-40 text-center"><h1 className="text-9xl font-black italic outline-text">HISTORY</h1></div>;
 const Contact = () => <div className="py-40 text-center"><h1 className="text-9xl font-black italic outline-text">CONTACT</h1></div>;
@@ -41,6 +42,7 @@ const App: React.FC = () => {
           <Route path="/legal" element={<Legal />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="/rules" element={<Rules />} />
+          <Route path="/tour3d" element={<Tour3D />} />
           <Route path="*" element={<div className="py-40 text-center font-black text-6xl">404 <br /><span className="text-nautilus text-xl">NOT FOUND</span></div>} />
         </Routes>
       </Layout>

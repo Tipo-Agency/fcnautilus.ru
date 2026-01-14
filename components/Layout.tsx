@@ -83,6 +83,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { name: 'КОМАНДА', path: '/team' },
     { name: 'РАСПИСАНИЕ', path: '/schedule' },
     { name: 'НОВОСТИ', path: '/news' },
+    { name: '3D ТУР', path: '/tour3d' },
   ];
 
   const logoUrl = "https://i.ibb.co/G3M5WBjq/image.png";

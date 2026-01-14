@@ -114,9 +114,9 @@ const Philosophy: React.FC = () => {
                 </div>
               </div>
 
-              {/* Кнопка видео-обзора */}
+              {/* Кнопка 3D тура */}
               <Link 
-                to="/video-tour" 
+                to="/tour3d" 
                 className="flex items-center justify-between w-full bg-[#f8fafc] hover:bg-slate-100 p-10 rounded-[2.8rem] group transition-all border border-slate-100/50"
               >
                 <div className="flex items-center gap-10">
@@ -125,7 +125,7 @@ const Philosophy: React.FC = () => {
                   </div>
                   <div className="flex flex-col">
                     <h4 className="text-xl font-extrabold italic uppercase tracking-widest mb-1 leading-none text-black">
-                      СМОТРЕТЬ ВИДЕО-ОБЗОР
+                      СМОТРЕТЬ 3D ТУР
                     </h4>
                     <p className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-[0.25em]">
                       ПОГРУЖЕНИЕ В АТМОСФЕРУ КЛУБА

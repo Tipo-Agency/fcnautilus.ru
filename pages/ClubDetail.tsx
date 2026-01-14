@@ -108,12 +108,12 @@ const ClubDetail: React.FC = () => {
                   ПРИСОЕДИНИТЬСЯ К КЛУБУ
                 </span>
               </button>
-              <button className="flex items-center gap-4 group">
+              <Link to="/tour3d" className="flex items-center gap-4 group">
                 <span className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
                   <Play fill="currentColor" size={24}/>
                 </span>
-                <span className="font-bold tracking-widest text-sm uppercase italic">СМОТРЕТЬ ФИЛЬМ</span>
-              </button>
+                <span className="font-bold tracking-widest text-sm uppercase italic">СМОТРЕТЬ 3D ТУР</span>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -151,9 +151,9 @@ const ClubDetail: React.FC = () => {
                 </div>
               </motion.div>
               
-              {/* Кнопка видео-обзора - перенесена под фото */}
+              {/* Кнопка 3D тура - перенесена под фото */}
               <Link 
-                to="/video-tour" 
+                to="/tour3d" 
                 className="flex items-center justify-between w-full bg-[#f8fafc] hover:bg-slate-100 p-10 rounded-[2.8rem] group transition-all border border-slate-100/50 mt-8"
               >
                 <div className="flex items-center gap-10">
@@ -162,7 +162,7 @@ const ClubDetail: React.FC = () => {
                   </div>
                   <div className="flex flex-col">
                     <h4 className="text-xl font-extrabold italic uppercase tracking-widest mb-1 leading-none text-black">
-                      СМОТРЕТЬ ВИДЕО-ОБЗОР
+                      СМОТРЕТЬ 3D ТУР
                     </h4>
                     <p className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-[0.25em]">
                       ПОГРУЖЕНИЕ В АТМОСФЕРУ КЛУБА
