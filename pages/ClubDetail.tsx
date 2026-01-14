@@ -81,7 +81,7 @@ const ClubDetail: React.FC = () => {
                 ФИТНЕС <span className="text-nautilus">КЛУБ</span>
               </h1>
             </div>
-            <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
+            <div className="flex flex-col md:flex-row gap-8 justify-center items-center relative z-20">
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -96,7 +96,7 @@ const ClubDetail: React.FC = () => {
                     window.dispatchEvent(new CustomEvent('openContactForm', { bubbles: true }));
                   }
                 }}
-                className="px-12 py-6 font-black text-xl italic transition-all duration-300 transform hover:scale-110 skew-x-[-10deg] uppercase"
+                className="px-12 py-6 font-black text-xl italic transition-all duration-300 transform hover:scale-110 skew-x-[-10deg] uppercase relative z-20"
                 style={{
                   backgroundColor: isHeroButtonHovered ? 'white' : '#372da5',
                   color: isHeroButtonHovered ? '#372da5' : 'white'
@@ -108,11 +108,11 @@ const ClubDetail: React.FC = () => {
                   ПРИСОЕДИНИТЬСЯ К КЛУБУ
                 </span>
               </button>
-              <Link to="/tour3d" className="flex items-center gap-4 group">
-                <span className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
+              <Link to="/tour3d" className="flex items-center gap-4 group relative z-20 cursor-pointer pointer-events-auto">
+                <span className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all pointer-events-auto">
                   <Play fill="currentColor" size={24}/>
                 </span>
-                <span className="font-bold tracking-widest text-sm uppercase italic">СМОТРЕТЬ 3D ТУР</span>
+                <span className="font-bold tracking-widest text-sm uppercase italic">3D ТУР</span>
               </Link>
             </div>
           </motion.div>
