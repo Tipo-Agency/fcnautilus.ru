@@ -35,13 +35,10 @@ const Tour3D: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 bg-gradient-to-br from-black/80 to-black/40 backdrop-blur-sm"
+            className="relative rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 bg-black"
           >
-            {/* Decorative gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-nautilus/10 via-transparent to-transparent pointer-events-none z-10"></div>
-            
             {/* 3D Tour iframe */}
-            <div className="relative w-full" style={{ aspectRatio: '16/9', minHeight: '480px' }}>
+            <div className="relative w-full" style={{ aspectRatio: '16/9', minHeight: '480px', paddingBottom: '56.25%' }}>
               <iframe
                 width="853"
                 height="480"
@@ -50,7 +47,9 @@ const Tour3D: React.FC = () => {
                 allowFullScreen
                 allow="xr-spatial-tracking"
                 className="absolute top-0 left-0 w-full h-full"
-                style={{ minHeight: '480px' }}
+                style={{ minHeight: '480px', border: 'none', display: 'block' }}
+                loading="lazy"
+                title="3D Tour Nautilus"
               />
             </div>
           </motion.div>
