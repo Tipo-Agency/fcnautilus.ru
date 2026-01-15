@@ -36,16 +36,17 @@ cat ~/.ssh/github_deploy.pub
 1. Откройте ваш репозиторий на GitHub
 2. Перейдите в **Settings** → **Secrets and variables** → **Actions**
 3. Нажмите **New repository secret**
-4. Добавьте следующие секреты:
+4. Добавьте следующие секреты (важно: используйте именно эти имена!):
 
-   - **DEPLOY_HOST** - IP адрес или домен вашего сервера (например: `192.168.1.100` или `example.com`)
-   - **DEPLOY_USER** - имя пользователя для SSH (например: `root` или `deploy`)
-   - **DEPLOY_SSH_KEY** - содержимое приватного ключа (скопируйте весь файл `~/.ssh/github_deploy`):
+   - **SERVER_HOST** - IP адрес или домен вашего сервера (например: `192.168.1.100` или `example.com`)
+   - **SERVER_USER** - имя пользователя для SSH (например: `root` или `deploy`)
+   - **SERVER_SSH_KEY** - содержимое приватного ключа (скопируйте весь файл `~/.ssh/github_deploy`):
      ```bash
      cat ~/.ssh/github_deploy
      ```
-   - **DEPLOY_PORT** - порт SSH (обычно `22`, можно не указывать если стандартный)
-   - **DEPLOY_PATH** - путь на сервере, куда деплоить (например: `/var/www/html` или `/home/user/www`)
+     **Важно:** Скопируйте весь ключ, включая строки `-----BEGIN OPENSSH PRIVATE KEY-----` и `-----END OPENSSH PRIVATE KEY-----`
+   - **SERVER_PORT** - порт SSH (обычно `22`, можно не указывать если стандартный)
+   - **SERVER_PATH** - путь на сервере, куда деплоить (например: `/var/www/html` или `/home/user/www`)
 
 ### Шаг 4: Проверьте подключение
 
@@ -60,18 +61,41 @@ ssh -i ~/.ssh/github_deploy user@your-server.com
 1. Сделайте push в main: `npm run push`
 2. Или запустите вручную через GitHub Actions: **Actions** → выберите workflow → **Run workflow**
 
+## Проверка работы автодеплоя
+
+После настройки:
+
+1. **Проверьте секреты в GitHub:**
+   - Откройте репозиторий → **Settings** → **Secrets and variables** → **Actions**
+   - Убедитесь, что все секреты добавлены с правильными именами:
+     - `SERVER_HOST`
+     - `SERVER_USER`
+     - `SERVER_SSH_KEY`
+     - `SERVER_PATH` (и опционально `SERVER_PORT`)
+
+2. **Проверьте логи деплоя:**
+   - Откройте **Actions** в репозитории
+   - Выберите последний workflow run
+   - Проверьте логи на наличие ошибок
+
+3. **Частые проблемы:**
+   - ❌ "can't connect without a private SSH key" → Не добавлен `SERVER_SSH_KEY` или ключ неправильный
+   - ❌ "Permission denied" → Публичный ключ не добавлен в `authorized_keys` на сервере
+   - ❌ "No such file or directory" → Неправильный `SERVER_PATH`
+   - ❌ "dist folder not found" → Ошибка сборки проекта
+
 ## Альтернативный вариант: Использование пароля (не рекомендуется)
 
 Если не хотите использовать SSH ключ, можно использовать пароль, но это менее безопасно:
 
 В `.github/workflows/deploy.yml` замените:
 ```yaml
-key: ${{ secrets.DEPLOY_SSH_KEY }}
+key: ${{ secrets.SERVER_SSH_KEY }}
 ```
 
 На:
 ```yaml
-password: ${{ secrets.DEPLOY_PASSWORD }}
+password: ${{ secrets.SERVER_PASSWORD }}
 ```
 
-И добавьте `DEPLOY_PASSWORD` в GitHub Secrets.
+И добавьте `SERVER_PASSWORD` в GitHub Secrets.
