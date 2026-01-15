@@ -46,7 +46,7 @@ cat ~/.ssh/github_deploy.pub
      ```
      **Важно:** Скопируйте весь ключ, включая строки `-----BEGIN OPENSSH PRIVATE KEY-----` и `-----END OPENSSH PRIVATE KEY-----`
    - **SERVER_PORT** - порт SSH (обычно `22`, можно не указывать если стандартный)
-   - **SERVER_PATH** - путь на сервере, куда деплоить (например: `/var/www/html` или `/home/user/www`)
+   - **SERVER_PATH** - путь на сервере, куда деплоить (например: `/home/deploy/new.fcnautilus.ru` или `/home/deploy/www`)
 
 ### Шаг 4: Проверьте подключение
 
@@ -65,8 +65,9 @@ ssh -i ~/.ssh/github_deploy user@your-server.com
    ```
 
 2. **Используйте пример из `nginx.conf.example`** в репозитории:
-   - Важно: `root` должен указывать на ваш `SERVER_PATH`
+   - **КРИТИЧНО:** `root` должен указывать на ваш `SERVER_PATH` (обычно `/home/deploy/...`, а НЕ `/var/www/...`)
    - Ключевая строка: `try_files $uri $uri/ /index.html;` (для HashRouter)
+   - **Пример:** если `SERVER_PATH` = `/home/deploy/new.fcnautilus.ru`, то `root` должен быть `/home/deploy/new.fcnautilus.ru`
 
 3. **Создайте симлинк:**
    ```bash
@@ -85,8 +86,12 @@ ssh -i ~/.ssh/github_deploy user@your-server.com
 
 6. **Проверьте права на файлы:**
    ```bash
-   sudo chown -R www-data:www-data $SERVER_PATH
+   # Замените на ваш реальный SERVER_PATH
+   SERVER_PATH="/home/deploy/new.fcnautilus.ru"  # или ваш путь
+   sudo chown -R deploy:deploy $SERVER_PATH
    sudo chmod -R 755 $SERVER_PATH
+   # Дайте nginx доступ на чтение
+   sudo chmod -R o+r $SERVER_PATH
    ```
 
 ### Шаг 6: Запустите деплой

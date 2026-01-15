@@ -10,24 +10,33 @@ server {
     # Редирект на HTTPS (если используется SSL)
     # return 301 https://$server_name$request_uri;
 
-    root /var/www/new.fcnautilus.ru;  # Укажите ваш SERVER_PATH
+    root /home/deploy/new.fcnautilus.ru;  # Укажите ваш SERVER_PATH (обычно /home/deploy/... или /home/USERNAME/...)
     index index.html;
 
     # Логи
     access_log /var/log/nginx/new.fcnautilus.ru.access.log;
     error_log /var/log/nginx/new.fcnautilus.ru.error.log;
 
-    # Основная локация - для HashRouter все запросы должны отдавать index.html
-    # ВАЖНО: для HashRouter (#/path) это должно работать, так как браузер не отправляет # на сервер
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # Кеширование статических файлов
+    # Статические файлы - обрабатываем первыми
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
         try_files $uri =404;
+    }
+
+    # Явно указываем index.html - без try_files чтобы избежать цикла
+    location = /index.html {
+        try_files /index.html =404;
+    }
+
+    # Все остальные запросы - отдаем index.html
+    location / {
+        try_files $uri $uri/ @fallback;
+    }
+
+    # Fallback для SPA - отдаем index.html для всех несуществующих путей
+    location @fallback {
+        rewrite ^.*$ /index.html last;
     }
 
     # Безопасность
