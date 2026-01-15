@@ -55,9 +55,43 @@ cat ~/.ssh/github_deploy.pub
 ssh -i ~/.ssh/github_deploy user@your-server.com
 ```
 
-### Шаг 5: Запустите деплой
+### Шаг 5: Настройте nginx (ВАЖНО!)
 
-После настройки всех секретов:
+После деплоя нужно настроить nginx для работы с SPA:
+
+1. **Создайте конфигурацию nginx:**
+   ```bash
+   sudo nano /etc/nginx/sites-available/new.fcnautilus.ru
+   ```
+
+2. **Используйте пример из `nginx.conf.example`** в репозитории:
+   - Важно: `root` должен указывать на ваш `SERVER_PATH`
+   - Ключевая строка: `try_files $uri $uri/ /index.html;` (для HashRouter)
+
+3. **Создайте симлинк:**
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/new.fcnautilus.ru /etc/nginx/sites-enabled/
+   ```
+
+4. **Проверьте конфигурацию:**
+   ```bash
+   sudo nginx -t
+   ```
+
+5. **Перезапустите nginx:**
+   ```bash
+   sudo systemctl restart nginx
+   ```
+
+6. **Проверьте права на файлы:**
+   ```bash
+   sudo chown -R www-data:www-data $SERVER_PATH
+   sudo chmod -R 755 $SERVER_PATH
+   ```
+
+### Шаг 6: Запустите деплой
+
+После настройки всех секретов и nginx:
 1. Сделайте push в main: `npm run push`
 2. Или запустите вручную через GitHub Actions: **Actions** → выберите workflow → **Run workflow**
 
@@ -83,6 +117,11 @@ ssh -i ~/.ssh/github_deploy user@your-server.com
    - ❌ "Permission denied" → Публичный ключ не добавлен в `authorized_keys` на сервере
    - ❌ "No such file or directory" → Неправильный `SERVER_PATH`
    - ❌ "dist folder not found" → Ошибка сборки проекта
+   - ❌ **"500 Internal Server Error"** → Проблема с конфигурацией nginx:
+     - Проверьте, что nginx настроен для SPA: `try_files $uri $uri/ /index.html;`
+     - Проверьте права на файлы: `chmod -R 755` и `chown -R www-data:www-data`
+     - Проверьте логи: `sudo tail -f /var/log/nginx/error.log`
+     - Убедитесь, что `root` в nginx указывает на правильный `SERVER_PATH`
 
 ## Альтернативный вариант: Использование пароля (не рекомендуется)
 

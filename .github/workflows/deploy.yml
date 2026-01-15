@@ -75,12 +75,29 @@ jobs:
             echo "Files in deployment directory:"
             ls -la
             echo ""
+            echo "Checking index.html:"
+            if [ -f "index.html" ]; then
+              echo "✅ index.html exists"
+              head -5 index.html
+            else
+              echo "❌ ERROR: index.html not found!"
+              exit 1
+            fi
+            echo ""
             echo "Total files deployed:"
             find . -type f | wc -l
             echo ""
-            echo "Directory structure:"
-            find . -type d -maxdepth 2 | head -20
+            echo "Setting correct permissions:"
+            chmod -R 755 .
+            chown -R www-data:www-data . 2>/dev/null || chown -R nginx:nginx . 2>/dev/null || echo "Could not change ownership"
+            echo ""
+            echo "Checking nginx configuration:"
+            if command -v nginx &> /dev/null; then
+              nginx -t 2>&1 || echo "⚠️  Nginx config test failed - check manually"
+            fi
             echo ""
             echo "✅ Deployment completed successfully!"
-            # Добавьте здесь команды для перезапуска сервера, если нужно
-            # Например: pm2 restart app или systemctl restart nginx
+            echo ""
+            echo "⚠️  IMPORTANT: Make sure nginx is configured correctly!"
+            echo "   Check nginx.conf.example in the repository for reference"
+            echo "   Key requirement: location / { try_files \$uri \$uri/ /index.html; }"
