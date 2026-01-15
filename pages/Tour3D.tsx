@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 const Tour3D: React.FC = () => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    // Отладочная информация
+    console.log('Tour3D page loaded');
+    if (iframeRef.current) {
+      console.log('Iframe element found:', iframeRef.current);
+      iframeRef.current.addEventListener('load', () => {
+        console.log('Iframe loaded successfully');
+      });
+      iframeRef.current.addEventListener('error', (e) => {
+        console.error('Iframe error:', e);
+      });
+    }
+  }, []);
+
   return (
     <div className="bg-black text-white min-h-screen">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative pt-32 pb-20 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black z-0"></div>
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
@@ -29,7 +45,7 @@ const Tour3D: React.FC = () => {
       </section>
 
       {/* 3D Tour Embed Section */}
-      <section className="py-12 pb-32 relative">
+      <section className="py-12 pb-32 relative w-full max-w-full">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -38,16 +54,21 @@ const Tour3D: React.FC = () => {
             className="relative rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 bg-black"
           >
             {/* 3D Tour iframe */}
-            <div className="relative w-full" style={{ aspectRatio: '16/9', minHeight: '480px', paddingBottom: '56.25%' }}>
+            <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
               <iframe
-                width="853"
-                height="480"
+                ref={iframeRef}
                 src="https://ep.matterport.host/index/?m=DTcCbvNreNQ"
                 frameBorder="0"
                 allowFullScreen
                 allow="xr-spatial-tracking"
-                className="absolute top-0 left-0 w-full h-full"
-                style={{ minHeight: '480px', border: 'none', display: 'block' }}
+                className="w-full h-full"
+                style={{ 
+                  border: 'none', 
+                  display: 'block',
+                  minHeight: '600px',
+                  width: '100%',
+                  height: '100%'
+                }}
                 loading="lazy"
                 title="3D Tour Nautilus"
               />

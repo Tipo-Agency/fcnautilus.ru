@@ -56,7 +56,7 @@ const ClubDetail: React.FC = () => {
   return (
     <div className="bg-black text-white">
       {/* Cinematic Hero */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden w-full max-w-full">
         <motion.div style={{ scale: scaleImage }} className="absolute inset-0 z-0">
           <img 
             src={club.image} 
@@ -402,11 +402,11 @@ const ClubDetail: React.FC = () => {
       </section>
 
       {/* Services Section */}
-      <section className="py-40 bg-black overflow-hidden border-t border-white/5">
+      <section className="py-40 bg-black overflow-hidden border-t border-white/5 w-full max-w-full">
         <div className="container mx-auto px-4 mb-20 text-center">
           <h2 className="text-[8vw] font-black leading-none outline-text italic uppercase">НАПРАВЛЕНИЯ</h2>
         </div>
-        <div className="flex gap-8 px-4 overflow-x-auto no-scrollbar pb-10">
+        <div className="flex gap-8 px-4 overflow-x-auto no-scrollbar pb-10 w-full">
           {SERVICES.map((s, i) => (
             <motion.div 
               whileHover={{ y: -20 }}
@@ -532,7 +532,7 @@ const ClubDetail: React.FC = () => {
       </section>
 
       {/* App Section */}
-      <section className="py-12 bg-zinc-950 relative overflow-hidden border-y border-white/5">
+      <section className="py-12 bg-zinc-950 relative overflow-hidden border-y border-white/5 w-full max-w-full">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             <motion.div 

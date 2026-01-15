@@ -505,7 +505,7 @@ const Profile: React.FC = () => {
   return (
     <div className="bg-black text-white relative min-h-screen">
       {/* Cinematic Hero */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden w-full max-w-full">
         <motion.div style={{ scale: scaleImage }} className="absolute inset-0 z-0">
           <img 
             src="/images/херо блок.jpg" 

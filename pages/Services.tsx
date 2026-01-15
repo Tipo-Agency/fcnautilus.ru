@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { SERVICES } from '../constants';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
@@ -7,11 +8,48 @@ const Services: React.FC = () => {
   const [hoveredServiceIndex, setHoveredServiceIndex] = useState<number | null>(null);
   const { scrollYProgress } = useScroll();
   const scaleImage = useTransform(scrollYProgress, [0, 0.5], [1.2, 1]);
+  const location = useLocation();
+
+  // Прокрутка к нужной секции при загрузке страницы
+  useEffect(() => {
+    const scrollToSection = (sectionId: string) => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // Небольшая задержка для полной загрузки страницы
+        setTimeout(() => {
+          const headerOffset = 100; // Отступ от верха для фиксированного хедера
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }, 300);
+      }
+    };
+
+    // Проверяем state для scrollTo
+    const state = location.state as { scrollTo?: string } | null;
+    if (state?.scrollTo) {
+      scrollToSection(state.scrollTo);
+      return;
+    }
+
+    // Также проверяем hash в URL (на случай прямого перехода)
+    const hash = location.hash || window.location.hash;
+    if (hash) {
+      const sectionId = hash.replace('#', '').split('/').pop() || hash.substring(1);
+      if (sectionId && sectionId !== 'services') {
+        scrollToSection(sectionId);
+      }
+    }
+  }, [location.pathname, location.hash, location.state]);
 
   return (
     <div className="bg-black text-white">
       {/* Cinematic Hero */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden w-full max-w-full">
         <motion.div style={{ scale: scaleImage }} className="absolute inset-0 z-0">
           <img 
             src="/images/херо блок.jpg" 
@@ -44,17 +82,18 @@ const Services: React.FC = () => {
       </section>
 
       {/* Services List */}
-      <section className="py-40 bg-black">
+      <section className="py-40 bg-black w-full max-w-full">
         <div className="container mx-auto px-4">
           <div className="space-y-64">
             {SERVICES.map((s, idx) => (
               <motion.div 
+                id={s.id}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
                 key={s.id} 
-                className={`flex flex-col lg:flex-row gap-20 items-center ${idx % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}
+                className={`flex flex-col lg:flex-row gap-20 items-center ${idx % 2 === 1 ? 'lg:flex-row-reverse' : ''} scroll-mt-24`}
                 onMouseEnter={() => setHoveredServiceIndex(idx)}
                 onMouseLeave={() => setHoveredServiceIndex(null)}
               >

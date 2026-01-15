@@ -72,10 +72,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
   }, []);
 
-  // Прокрутка вверх при изменении маршрута
+  // Прокрутка вверх при изменении маршрута (только если нет якоря или state с scrollTo)
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+    const state = location.state as { scrollTo?: string } | null;
+    if (!location.hash && !state?.scrollTo) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname, location.hash, location.state]);
 
   const navLinks = [
     { name: 'КЛУБЫ', path: '/clubs' },
@@ -89,10 +92,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const logoUrl = "https://i.ibb.co/G3M5WBjq/image.png";
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen overflow-x-hidden w-full max-w-full">
       {/* Header - красивая шапка без белого фона */}
-      <header className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/60 backdrop-blur-xl py-4' : 'bg-transparent py-8'} text-white`}>
-        <div className="container mx-auto px-4 flex justify-between items-center">
+      <header className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/60 backdrop-blur-xl py-4' : 'bg-transparent py-8'} text-white max-w-full`}>
+        <div className="container mx-auto px-4 flex justify-between items-center w-full max-w-full">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
               <img 
@@ -164,7 +167,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         )}
       </AnimatePresence>
 
-      <main className="flex-grow">
+      <main className="flex-grow overflow-x-hidden w-full max-w-full">
         {children}
       </main>
 

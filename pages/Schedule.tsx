@@ -83,7 +83,7 @@ const Schedule: React.FC = () => {
   return (
     <div className="bg-black text-white">
       {/* Cinematic Hero */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden w-full max-w-full">
         <motion.div style={{ scale: scaleImage }} className="absolute inset-0 z-0">
           <img 
             src="/images/херо блок.jpg" 
@@ -176,7 +176,7 @@ const Schedule: React.FC = () => {
           </div>
 
           {/* Schedule Grid by Days - горизонтальная прокрутка */}
-          <div className="overflow-x-auto pb-6 no-scrollbar">
+          <div className="overflow-x-auto pb-6 no-scrollbar w-full">
             <div className="flex gap-6 min-w-max">
               {daysOfWeek.map((day, dayIndex) => {
                 const daySchedule = getScheduleForDay(dayIndex);

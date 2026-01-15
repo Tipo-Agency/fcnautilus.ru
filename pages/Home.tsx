@@ -31,7 +31,7 @@ const Home: React.FC = () => {
   return (
     <div className="bg-black text-white">
       {/* Cinematic Hero */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden w-full max-w-full">
         <motion.div style={{ scale: scaleImage }} className="absolute inset-0 z-0">
           <img 
             src="/images/херо блок.jpg" 
@@ -98,19 +98,23 @@ const Home: React.FC = () => {
       <Philosophy />
 
       {/* Services Section */}
-      <section className="py-40 bg-black overflow-hidden border-t border-white/5">
+      <section className="py-40 bg-black overflow-hidden border-t border-white/5 w-full max-w-full">
         <div className="container mx-auto px-4 mb-20 text-center">
           <h2 className="text-[8vw] font-black leading-none outline-text italic uppercase">НАПРАВЛЕНИЯ</h2>
         </div>
-        <div className="flex gap-8 px-4 overflow-x-auto no-scrollbar pb-10">
+        <div className="flex gap-8 px-4 overflow-x-auto no-scrollbar pb-10 w-full">
           {SERVICES.map((s, i) => (
-            <motion.div 
-              whileHover={{ y: -20 }}
-              key={i} 
-              className="min-w-[400px] h-[600px] relative rounded-[4rem] overflow-hidden group shadow-2xl border border-white/5"
-              onMouseEnter={() => setHoveredServiceIndex(i)}
-              onMouseLeave={() => setHoveredServiceIndex(null)}
+            <Link
+              to={`/services`}
+              state={{ scrollTo: s.id }}
+              key={i}
             >
+              <motion.div 
+                whileHover={{ y: -20 }}
+                className="min-w-[400px] h-[600px] relative rounded-[4rem] overflow-hidden group shadow-2xl border border-white/5 cursor-pointer"
+                onMouseEnter={() => setHoveredServiceIndex(i)}
+                onMouseLeave={() => setHoveredServiceIndex(null)}
+              >
               <img 
                 src={s.image} 
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-50 grayscale group-hover:grayscale-0" 
@@ -136,12 +140,13 @@ const Home: React.FC = () => {
                 </div>
               </div>
             </motion.div>
+            </Link>
           ))}
         </div>
       </section>
 
       {/* App Section */}
-      <section className="py-12 bg-zinc-950 relative overflow-hidden border-y border-white/5">
+      <section className="py-12 bg-zinc-950 relative overflow-hidden border-y border-white/5 w-full max-w-full">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             <motion.div 

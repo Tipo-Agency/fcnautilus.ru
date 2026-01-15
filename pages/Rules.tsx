@@ -16,7 +16,7 @@ const Rules: React.FC = () => {
   return (
     <div className="bg-black text-white min-h-screen pt-32 pb-20">
       {/* Hero Section */}
-      <section className="relative py-20 mb-12 overflow-hidden">
+      <section className="relative py-20 mb-12 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 bg-gradient-to-b from-nautilus/10 via-transparent to-transparent"></div>
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
