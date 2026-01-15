@@ -91,13 +91,42 @@ jobs:
             chmod -R 755 .
             chown -R www-data:www-data . 2>/dev/null || chown -R nginx:nginx . 2>/dev/null || echo "Could not change ownership"
             echo ""
-            echo "Checking nginx configuration:"
-            if command -v nginx &> /dev/null; then
-              nginx -t 2>&1 || echo "⚠️  Nginx config test failed - check manually"
+            echo "=== NGINX DIAGNOSTICS ==="
+            echo ""
+            echo "1. Current nginx config for new.fcnautilus.ru:"
+            if [ -f "/etc/nginx/sites-available/new.fcnautilus.ru" ]; then
+              cat /etc/nginx/sites-available/new.fcnautilus.ru
+            else
+              echo "❌ Config file not found at /etc/nginx/sites-available/new.fcnautilus.ru"
+              echo "Checking sites-enabled:"
+              ls -la /etc/nginx/sites-enabled/ | grep new.fcnautilus.ru || echo "No symlink found"
             fi
+            echo ""
+            echo "2. Root path from config:"
+            ROOT_PATH=$(grep -E "^\s*root\s+" /etc/nginx/sites-available/new.fcnautilus.ru 2>/dev/null | head -1 | awk '{print $2}' | tr -d ';')
+            if [ -n "$ROOT_PATH" ]; then
+              echo "   Root: $ROOT_PATH"
+              echo "   Current SERVER_PATH: ${{ secrets.SERVER_PATH }}"
+              if [ "$ROOT_PATH" != "${{ secrets.SERVER_PATH }}" ]; then
+                echo "   ⚠️  WARNING: Root path in nginx config ($ROOT_PATH) does not match SERVER_PATH (${{ secrets.SERVER_PATH }})!"
+              fi
+              if [ -d "$ROOT_PATH" ]; then
+                echo "   ✅ Root directory exists"
+                ls -la "$ROOT_PATH" | head -10
+              else
+                echo "   ❌ Root directory does NOT exist: $ROOT_PATH"
+              fi
+            else
+              echo "   ❌ Could not extract root from config"
+            fi
+            echo ""
+            echo "3. Nginx syntax check:"
+            nginx -t 2>&1 || echo "⚠️  Nginx config test failed"
+            echo ""
+            echo "4. Last nginx errors:"
+            tail -10 /var/log/nginx/error.log 2>/dev/null || echo "Could not read error log"
             echo ""
             echo "✅ Deployment completed successfully!"
             echo ""
-            echo "⚠️  IMPORTANT: Make sure nginx is configured correctly!"
-            echo "   Check nginx.conf.example in the repository for reference"
-            echo "   Key requirement: location / { try_files \$uri \$uri/ /index.html; }"
+            echo "⚠️  IMPORTANT: If you see errors above, fix nginx configuration!"
+            echo "   Root path in nginx MUST match SERVER_PATH: ${{ secrets.SERVER_PATH }}"
