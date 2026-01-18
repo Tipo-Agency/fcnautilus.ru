@@ -24,6 +24,7 @@ import { CLUBS, SERVICES } from '../constants';
 import Philosophy from '../components/home/Philosophy';
 import { ClubCard } from '../types';
 import { sendToWebhook, WEBHOOK_URL_SOUTH } from '../utils/webhook';
+import { formatPhoneNumber, getPhoneDigits, isValidPhone } from '../utils/phoneMask';
 
 const ClubDetail: React.FC = () => {
   const { clubId } = useParams<{ clubId: string }>();
@@ -298,14 +299,21 @@ const ClubDetail: React.FC = () => {
                     return;
                   }
                   
+                  // Валидация телефона
+                  if (!isValidPhone(giftFormData.phone)) {
+                    alert('Пожалуйста, введите корректный номер телефона (+7 XXX XXX-XX-XX)');
+                    return;
+                  }
+                  
                   // Отправка на вебхук только для клуба Южный
                   if (club.id === 'nautilus-south') {
                     setIsSubmittingGift(true);
                     try {
+                      const phoneDigits = getPhoneDigits(giftFormData.phone);
                       const success = await sendToWebhook(
                         {
-                          name: giftFormData.name,
-                          phone: giftFormData.phone,
+                          name: giftFormData.name.trim(),
+                          phone: phoneDigits,
                           comment: 'Заявка на получение подарка (60 дней)',
                         },
                         WEBHOOK_URL_SOUTH
@@ -316,11 +324,12 @@ const ClubDetail: React.FC = () => {
                         alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
                         setGiftFormData({ name: '', phone: '' });
                       } else {
-                        alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+                        alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38');
                       }
                     } catch (error) {
                       console.error('Error submitting gift form:', error);
-                      alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+                      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+                      alert(`Произошла ошибка при отправке заявки: ${errorMessage}. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38`);
                     } finally {
                       setIsSubmittingGift(false);
                     }
@@ -357,8 +366,11 @@ const ClubDetail: React.FC = () => {
                       id="gift-phone"
                       name="phone"
                       value={giftFormData.phone}
-                      onChange={(e) => setGiftFormData({ ...giftFormData, phone: e.target.value })}
-                      placeholder="+7 (XXX) XXX-XX-XX"
+                      onChange={(e) => {
+                        const formatted = formatPhoneNumber(e.target.value);
+                        setGiftFormData({ ...giftFormData, phone: formatted });
+                      }}
+                      placeholder="+7 (999) 123-45-67"
                       className="w-full bg-white/10 border border-white/20 rounded-xl py-4 pl-12 pr-4 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50"
                       required
                     />

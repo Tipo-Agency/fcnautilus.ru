@@ -108,25 +108,57 @@ export const sendToWebhook = async (
     console.log('Sending to webhook:', webhookUrl);
     console.log('Webhook data:', webhookData);
 
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(webhookData),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут
 
-    console.log('Webhook response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => 'No error details');
-      console.error('Webhook error:', response.status, response.statusText, errorText);
-      return false;
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(webhookData),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      console.log('Webhook response status:', response.status);
+      console.log('Webhook response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'No error details');
+        console.error('Webhook error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText,
+          url: webhookUrl
+        });
+        return false;
+      }
+
+      const responseData = await response.text().catch(() => '');
+      console.log('Webhook success:', responseData);
+      return true;
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      
+      if (fetchError instanceof Error) {
+        if (fetchError.name === 'AbortError') {
+          console.error('Webhook timeout after 30 seconds');
+        } else if (fetchError.message.includes('CORS')) {
+          console.error('Webhook CORS error:', fetchError.message);
+        } else if (fetchError.message.includes('network') || fetchError.message.includes('Failed to fetch')) {
+          console.error('Webhook network error:', fetchError.message);
+        } else {
+          console.error('Webhook fetch error:', fetchError.message, fetchError.stack);
+        }
+      } else {
+        console.error('Unknown webhook error:', fetchError);
+      }
+      
+      throw fetchError; // Пробрасываем ошибку дальше для обработки в форме
     }
-
-    const responseData = await response.text().catch(() => '');
-    console.log('Webhook success:', responseData);
-    return true;
   } catch (error) {
     console.error('Error sending to webhook:', error);
     if (error instanceof Error) {

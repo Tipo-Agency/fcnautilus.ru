@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { X, User, Phone, Mail, Send } from 'lucide-react';
 import { sendToWebhook, WEBHOOK_URL_SOUTH } from '../utils/webhook';
+import { formatPhoneNumber, getPhoneDigits, isValidPhone } from '../utils/phoneMask';
 
 interface ContactFormProps {
   isOpen: boolean;
@@ -20,15 +21,23 @@ const ContactForm: React.FC<ContactFormProps> = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Валидация телефона
+    if (!isValidPhone(formData.phone)) {
+      alert('Пожалуйста, введите корректный номер телефона (+7 XXX XXX-XX-XX)');
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      // Отправка на вебхук 1С
+      // Отправка на вебхук 1С - передаем только цифры телефона
+      const phoneDigits = getPhoneDigits(formData.phone);
       const success = await sendToWebhook(
         {
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
+          name: formData.name.trim(),
+          phone: phoneDigits,
+          email: formData.email.trim() || undefined,
           comment: 'Новая заявка с сайта',
         },
         WEBHOOK_URL_SOUTH
@@ -40,21 +49,35 @@ const ContactForm: React.FC<ContactFormProps> = ({ isOpen, onClose }) => {
         setFormData({ name: '', phone: '', email: '' });
         onClose();
       } else {
-        alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+        alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+      // Более подробное сообщение об ошибке
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Error details:', errorMessage);
+      alert(`Произошла ошибка при отправке заявки: ${errorMessage}. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    
+    // Применяем маску для телефона
+    if (name === 'phone') {
+      const formatted = formatPhoneNumber(value);
+      setFormData({
+        ...formData,
+        [name]: formatted,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   if (!isOpen) {
