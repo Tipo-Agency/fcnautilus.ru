@@ -30,7 +30,7 @@ const Tour3D: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h1 className="text-[12vw] md:text-[8vw] font-black leading-none outline-text italic uppercase mb-6 tracking-tighter">
+            <h1 className="text-[14vw] sm:text-[12vw] md:text-[10vw] lg:text-[8vw] font-black leading-none outline-text italic uppercase mb-6 tracking-tighter">
               3D ТУР
             </h1>
             <p className="text-xl md:text-2xl text-white/70 font-bold italic uppercase tracking-widest mb-4">

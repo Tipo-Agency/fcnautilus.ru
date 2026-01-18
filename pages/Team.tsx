@@ -30,10 +30,10 @@ const Team: React.FC = () => {
             className="text-center"
           >
             <div className="flex flex-col items-center justify-center w-full">
-              <h1 className="text-[12vw] font-black leading-none mb-6 md:mb-4 outline-text tracking-tighter italic uppercase text-center">
+              <h1 className="text-[14vw] sm:text-[12vw] md:text-[11vw] lg:text-[12vw] font-black leading-none mb-6 md:mb-4 outline-text tracking-tighter italic uppercase text-center">
                 КОМАНДА
               </h1>
-              <h1 className="text-[10vw] font-black leading-none mb-10 tracking-tighter uppercase -mt-8 md:-mt-24 text-center">
+              <h1 className="text-[12vw] sm:text-[10vw] md:text-[9vw] lg:text-[10vw] font-black leading-none mb-10 tracking-tighter uppercase -mt-6 sm:-mt-8 md:-mt-20 lg:-mt-24 text-center">
                 <span className="text-nautilus">ЧЕМПИОНОВ</span>
               </h1>
             </div>

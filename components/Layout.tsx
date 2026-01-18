@@ -187,7 +187,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               viewport={{ once: true }}
               className="max-w-3xl"
             >
-              <h2 className="text-[10vw] lg:text-[7vw] font-black italic leading-[0.85] uppercase tracking-tighter mb-8">
+              <h2 className="text-[12vw] sm:text-[10vw] md:text-[9vw] lg:text-[7vw] font-black italic leading-[0.85] uppercase tracking-tighter mb-6 sm:mb-8">
                 ТВОЙ <br /><span className="text-nautilus">ПРЕДЕЛ</span> <br />ТУТ.
               </h2>
               <div className="flex flex-wrap gap-4">
@@ -219,21 +219,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </motion.div>
             
             <div className="flex flex-col items-end text-right">
-              <p className="text-nautilus font-black text-xs tracking-[0.4em] uppercase mb-4">Главный штаб</p>
-              <a href="tel:+74212950938" className="text-4xl md:text-6xl font-black italic hover:text-nautilus transition-colors leading-none">+7 (4212) 95-09-38</a>
-              <p className="text-white/40 font-bold mt-2 uppercase italic">Хабаровск, будни 06:00-23:30, выходные 07:00-22:30</p>
+              <p className="text-nautilus font-black text-xs tracking-[0.4em] uppercase mb-3 sm:mb-4">Главный штаб</p>
+              <a href="tel:+74212950938" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black italic hover:text-nautilus transition-colors leading-none">+7 (4212) 95-09-38</a>
+              <p className="text-white/40 font-bold mt-2 text-xs sm:text-sm uppercase italic">Хабаровск, будни 06:00-23:30, выходные 07:00-22:30</p>
             </div>
           </div>
 
           {/* Main Footer Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-8 border-t border-white/10 pt-20 pb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 sm:gap-14 md:gap-16 lg:gap-8 border-t border-white/10 pt-12 sm:pt-16 md:pt-20 pb-12 sm:pb-16 md:pb-20">
             {/* Logo & About */}
             <div className="lg:col-span-1">
-              <img src={logoUrl} alt="NAUTILUS" className="h-12 w-auto brightness-0 invert mb-10" />
-              <p className="text-white/50 text-sm leading-relaxed font-medium mb-10 max-w-xs">
+              <img src={logoUrl} alt="NAUTILUS" className="h-10 sm:h-12 w-auto brightness-0 invert mb-6 sm:mb-8 md:mb-10" />
+              <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium mb-6 sm:mb-8 md:mb-10 max-w-xs">
                 Крупнейшая сеть фитнес-клубов в Хабаровске. Мы создаем атлетов с 2012 года, используя передовые технологии и олдскульный подход к тренировкам.
               </p>
-              <div className="flex gap-4">
+              <div className="flex gap-3 sm:gap-4">
                 {[
                   { icon: <Instagram size={20}/>, link: 'https://www.instagram.com/fc.nautilus/' },
                   { icon: <TelegramIcon size={20}/>, link: 'https://t.me/fcnautiluskhv' },
@@ -249,11 +249,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {/* Links Columns */}
             <div>
-              <h4 className="text-nautilus font-black text-[10px] tracking-[0.4em] uppercase mb-10">Навигация</h4>
-              <ul className="space-y-4">
+              <h4 className="text-nautilus font-black text-[10px] tracking-[0.4em] uppercase mb-6 sm:mb-8 md:mb-10">Навигация</h4>
+              <ul className="space-y-3 sm:space-y-4">
                 {navLinks.map((link, i) => (
                   <li key={i}>
-                    <Link to={link.path} className="text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
+                    <Link to={link.path} className="text-xl sm:text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
                       {link.name}
                     </Link>
                   </li>
@@ -263,20 +263,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {/* Legal Links Column */}
             <div>
-              <h4 className="text-nautilus font-black text-[10px] tracking-[0.4em] uppercase mb-10">Документы</h4>
-              <ul className="space-y-4">
+              <h4 className="text-nautilus font-black text-[10px] tracking-[0.4em] uppercase mb-6 sm:mb-8 md:mb-10">Документы</h4>
+              <ul className="space-y-3 sm:space-y-4">
                 <li>
-                  <Link to="/legal" className="text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
+                  <Link to="/legal" className="text-xl sm:text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
                     ОФЕРТА
                   </Link>
                 </li>
                 <li>
-                  <Link to="/rules" className="text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
+                  <Link to="/rules" className="text-xl sm:text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
                     ПРАВИЛА
                   </Link>
                 </li>
                 <li>
-                  <Link to="/policy" className="text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
+                  <Link to="/policy" className="text-xl sm:text-2xl font-black italic uppercase hover:text-nautilus transition-all inline-block hover:translate-x-2">
                     ПОЛИТИКА
                   </Link>
                 </li>
@@ -284,18 +284,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
 
             <div>
-              <h4 className="text-nautilus font-black text-[10px] tracking-[0.4em] uppercase mb-10">Локации</h4>
-              <div className="space-y-8">
+              <h4 className="text-nautilus font-black text-[10px] tracking-[0.4em] uppercase mb-6 sm:mb-8 md:mb-10">Локации</h4>
+              <div className="space-y-6 sm:space-y-8">
                 <div>
-                  <h5 className="font-black italic uppercase text-lg mb-2 underline decoration-nautilus underline-offset-4">Южный</h5>
+                  <h5 className="font-black italic uppercase text-base sm:text-lg mb-2 underline decoration-nautilus underline-offset-4">Южный</h5>
                   <p className="text-white/40 text-xs font-bold uppercase mb-2">ул. Суворова, 25а</p>
-                  <a href="tel:+74212950938" className="text-sm font-black hover:text-nautilus transition-colors">+7 (4212) 95-09-38</a>
+                  <a href="tel:+74212950938" className="text-xs sm:text-sm font-black hover:text-nautilus transition-colors">+7 (4212) 95-09-38</a>
                   <p className="text-white/40 text-xs font-bold mt-1">Будни 06:00-23:30, выходные 07:00-22:30</p>
                 </div>
                 <div>
-                  <h5 className="font-black italic uppercase text-lg mb-2 underline decoration-nautilus underline-offset-4">Загородный</h5>
+                  <h5 className="font-black italic uppercase text-base sm:text-lg mb-2 underline decoration-nautilus underline-offset-4">Загородный</h5>
                   <p className="text-white/40 text-xs font-bold uppercase mb-2">ул. Воровского, 17</p>
-                  <a href="tel:+74212950938" className="text-sm font-black hover:text-nautilus transition-colors">+7 (4212) 95-09-38</a>
+                  <a href="tel:+74212950938" className="text-xs sm:text-sm font-black hover:text-nautilus transition-colors">+7 (4212) 95-09-38</a>
                   <p className="text-white/40 text-xs font-bold mt-1">Будни 06:00-23:30, выходные 07:00-22:30</p>
                 </div>
               </div>

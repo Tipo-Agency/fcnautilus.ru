@@ -9,7 +9,7 @@ const Vacancies: React.FC = () => {
     <div className="pt-32 pb-40 bg-black text-white">
       <div className="container mx-auto px-4">
         <header className="mb-32 text-center">
-          <h1 className="text-[12vw] font-black leading-none outline-text italic mb-6 uppercase">КАРЬЕРА</h1>
+          <h1 className="text-[14vw] sm:text-[12vw] md:text-[11vw] lg:text-[10vw] font-black leading-none outline-text italic mb-4 sm:mb-6 uppercase">КАРЬЕРА</h1>
           <h2 className="text-5xl md:text-7xl font-black italic mb-10 -mt-10 md:-mt-20 uppercase text-nautilus">СТАНЬ ЧАСТЬЮ ЭЛИТЫ</h2>
           <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
             Мы не просто нанимаем сотрудников. Мы создаем команду лидеров, которые меняют жизнь людей каждый день.

@@ -49,10 +49,10 @@ const Home: React.FC = () => {
             className="text-center"
           >
             <div className="flex flex-col items-center justify-center w-full">
-              <h1 className="text-[12vw] font-black leading-none mb-6 md:mb-4 outline-text tracking-tighter italic uppercase text-center">
+              <h1 className="text-[14vw] sm:text-[12vw] md:text-[11vw] lg:text-[12vw] font-black leading-none mb-6 md:mb-4 outline-text tracking-tighter italic uppercase text-center">
                 БЕЗГРАНИЧНАЯ
               </h1>
-              <h1 className="text-[10vw] font-black leading-none mb-10 tracking-tighter uppercase -mt-8 md:-mt-24 text-center">
+              <h1 className="text-[12vw] sm:text-[10vw] md:text-[9vw] lg:text-[10vw] font-black leading-none mb-10 tracking-tighter uppercase -mt-6 sm:-mt-8 md:-mt-20 lg:-mt-24 text-center">
                 СИЛА И <span className="text-nautilus">МОЩЬ</span>
               </h1>
             </div>
@@ -99,8 +99,8 @@ const Home: React.FC = () => {
 
       {/* Services Section */}
       <section className="py-40 bg-black overflow-hidden border-t border-white/5 w-full max-w-full">
-        <div className="container mx-auto px-4 mb-20 text-center">
-          <h2 className="text-[8vw] font-black leading-none outline-text italic uppercase">НАПРАВЛЕНИЯ</h2>
+        <div className="container mx-auto px-4 mb-12 sm:mb-16 md:mb-20 text-center">
+          <h2 className="text-[10vw] sm:text-[9vw] md:text-[8vw] lg:text-[7vw] font-black leading-none outline-text italic uppercase">НАПРАВЛЕНИЯ</h2>
         </div>
         <div className="flex gap-8 px-4 overflow-x-auto no-scrollbar pb-10 w-full">
           {SERVICES.map((s, i) => (
@@ -111,7 +111,7 @@ const Home: React.FC = () => {
             >
               <motion.div 
                 whileHover={{ y: -20 }}
-                className="min-w-[400px] h-[600px] relative rounded-[4rem] overflow-hidden group shadow-2xl border border-white/5 cursor-pointer"
+                className="min-w-[280px] sm:min-w-[320px] md:min-w-[360px] lg:min-w-[400px] h-[500px] sm:h-[550px] md:h-[580px] lg:h-[600px] relative rounded-[2rem] md:rounded-[3rem] lg:rounded-[4rem] overflow-hidden group shadow-2xl border border-white/5 cursor-pointer"
                 onMouseEnter={() => setHoveredServiceIndex(i)}
                 onMouseLeave={() => setHoveredServiceIndex(null)}
               >
@@ -120,10 +120,10 @@ const Home: React.FC = () => {
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-50 grayscale group-hover:grayscale-0" 
                 alt={s.title}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20 p-12 flex flex-col justify-end">
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20 p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col justify-end">
                 <span className="text-nautilus font-black text-xs uppercase mb-2">#{i + 1}</span>
-                <h3 className="text-4xl font-black text-white mb-4 italic uppercase min-h-[4.5rem] flex items-end leading-tight">{s.title}</h3>
-                <p className="text-white/60 text-sm mb-8 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">{s.description}</p>
+                <h3 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-black text-white mb-3 md:mb-4 italic uppercase min-h-[3.5rem] sm:min-h-[4rem] md:min-h-[4.5rem] flex items-end leading-tight">{s.title}</h3>
+                <p className="text-white/60 text-xs sm:text-sm mb-6 md:mb-8 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">{s.description}</p>
                 <div 
                   className="w-12 h-12 rounded-full flex items-center justify-center transition-all"
                   style={{
@@ -227,16 +227,16 @@ const Home: React.FC = () => {
       </section>
 
       {/* Pricing Highlight */}
-      <section className="py-40 bg-nautilus text-white relative">
-        <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+      <section className="py-20 sm:py-32 md:py-40 bg-nautilus text-white relative w-full max-w-full">
+        <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 md:gap-20 items-center">
            <div>
-             <h2 className="text-6xl md:text-8xl font-black leading-none italic uppercase mb-10">Стань часть <br /> легенды.</h2>
-             <p className="text-2xl opacity-80 mb-12 italic">Особые условия для новых атлетов до конца мая.</p>
-             <ul className="space-y-6 mb-12">
+             <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-none italic uppercase mb-6 sm:mb-8 md:mb-10">Стань часть <br /> легенды.</h2>
+             <p className="text-lg sm:text-xl md:text-2xl opacity-80 mb-8 sm:mb-10 md:mb-12 italic">Особые условия для новых атлетов до конца мая.</p>
+             <ul className="space-y-4 sm:space-y-5 md:space-y-6 mb-8 sm:mb-10 md:mb-12">
                {['Безлимитный доступ 24/7', 'Персональный разбор целей', 'Доступ во все клубы сети'].map((t, i) => (
-                 <li key={i} className="flex items-center gap-4 font-black text-xl italic uppercase">
-                   <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shrink-0">
-                     <CheckCircle2 size={16}/>
+                 <li key={i} className="flex items-center gap-3 sm:gap-4 font-black text-base sm:text-lg md:text-xl italic uppercase">
+                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white flex items-center justify-center shrink-0">
+                     <CheckCircle2 size={14} className="sm:w-4 sm:h-4"/>
                    </div>
                    {t}
                  </li>
@@ -256,7 +256,7 @@ const Home: React.FC = () => {
                    window.dispatchEvent(new CustomEvent('openContactForm', { bubbles: true }));
                  }
                }}
-               className="px-16 py-8 font-black text-2xl skew-x-[-10deg] transition-all duration-300 inline-flex items-center gap-4 uppercase italic"
+               className="px-8 sm:px-12 md:px-16 py-5 sm:py-6 md:py-8 font-black text-lg sm:text-xl md:text-2xl skew-x-[-10deg] transition-all duration-300 inline-flex items-center gap-3 sm:gap-4 uppercase italic"
                style={{
                  backgroundColor: isCardButtonHovered ? 'black' : 'white',
                  color: isCardButtonHovered ? 'white' : '#372da5'

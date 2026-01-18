@@ -1,0 +1,29 @@
+# robots.txt для NAUTILUS Fitness
+# https://fcnautilus.ru/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /*/profile
+Disallow: /#/profile
+
+# Разрешаем индексацию основных страниц
+Allow: /#
+Allow: /#/clubs
+Allow: /#/services
+Allow: /#/team
+Allow: /#/schedule
+Allow: /#/news
+Allow: /#/tour3d
+Allow: /#/legal
+Allow: /#/policy
+Allow: /#/rules
+Allow: /#/vacancies
+Allow: /#/b2b
+Allow: /#/faq
+
+# Sitemap
+Sitemap: https://fcnautilus.ru/sitemap.xml
+
+# Crawl-delay (опционально, можно убрать если не нужен)
+# Crawl-delay: 1
