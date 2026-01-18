@@ -119,7 +119,7 @@ jobs:
               # Проверяем наличие прокси для /api/webhook
               if ! grep -q "location /api/webhook" "$NGINX_CONFIG"; then
                 echo "⚠️  Proxy block for /api/webhook not found. Adding it..."
-                # Создаем прокси блок через printf (без heredoc для YAML совместимости)
+                # Создаем прокси блок через printf с правильным экранированием nginx переменных ($ в одинарных кавычках = строка)
                 sudo printf '%s\n' \
                   '    # Прокси для webhook 1С (чтобы избежать CORS) - ВАЖНО: должен быть ПЕРЕД location /' \
                   '    location /api/webhook {' \
@@ -140,12 +140,33 @@ jobs:
                   '        }' \
                   '    }' \
                   '' > /tmp/nginx_proxy_block.txt
-                # Вставляем прокси блок перед location /
-                sudo sed -i '/^\s*location \/ {/r /tmp/nginx_proxy_block.txt' "$NGINX_CONFIG"
+                # Пробуем найти location / и вставить перед ним (разные варианты паттерна)
+                if grep -q "location / {" "$NGINX_CONFIG"; then
+                  sudo sed -i '/location \/ {/r /tmp/nginx_proxy_block.txt' "$NGINX_CONFIG"
+                elif grep -qE "^\s*location / {" "$NGINX_CONFIG"; then
+                  sudo sed -i '/^\s*location \/ {/r /tmp/nginx_proxy_block.txt' "$NGINX_CONFIG"
+                elif grep -q "location /" "$NGINX_CONFIG"; then
+                  sudo sed -i '0,/location \//{ /location \//r /tmp/nginx_proxy_block.txt }' "$NGINX_CONFIG"
+                else
+                  # Если не нашли location /, добавляем перед закрывающей скобкой server блока
+                  sudo sed -i '0,/^}/{ /^}/r /tmp/nginx_proxy_block.txt }' "$NGINX_CONFIG"
+                fi
                 sudo rm -f /tmp/nginx_proxy_block.txt
                 echo "   ✅ Proxy block added"
+                # Проверяем что блок действительно добавился
+                if grep -q "location /api/webhook" "$NGINX_CONFIG"; then
+                  echo "   ✅ Verified: proxy block found in config"
+                  echo "   Showing lines around /api/webhook:"
+                  grep -A 5 -B 2 "location /api/webhook" "$NGINX_CONFIG" | head -10
+                else
+                  echo "   ❌ ERROR: proxy block NOT found after insertion! Trying alternative method..."
+                  # Альтернативный метод - добавляем в конец перед }
+                  sudo sed -i '$ i\    location /api/webhook {\n        proxy_pass https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e;\n        proxy_http_version 1.1;\n        proxy_set_header Host cloud.1c.fitness;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_buffering off;\n    }' "$NGINX_CONFIG"
+                fi
               else
                 echo "   ✅ Proxy block for /api/webhook already exists"
+                echo "   Showing existing proxy block:"
+                grep -A 15 "location /api/webhook" "$NGINX_CONFIG" | head -20
               fi
               
               # Проверяем синтаксис nginx
