@@ -91,15 +91,90 @@ jobs:
             chmod -R 755 .
             chown -R www-data:www-data . 2>/dev/null || chown -R nginx:nginx . 2>/dev/null || echo "Could not change ownership"
             echo ""
+            echo "=== AUTO-CONFIGURE NGINX ==="
+            echo ""
+            
+            # Определяем имя конфига (проверяем оба варианта)
+            NGINX_CONFIG=""
+            if [ -f "/etc/nginx/sites-available/fcnautilus.ru" ]; then
+              NGINX_CONFIG="/etc/nginx/sites-available/fcnautilus.ru"
+            elif [ -f "/etc/nginx/sites-available/new.fcnautilus.ru" ]; then
+              NGINX_CONFIG="/etc/nginx/sites-available/new.fcnautilus.ru"
+            fi
+            
+            if [ -n "$NGINX_CONFIG" ]; then
+              echo "✅ Found nginx config: $NGINX_CONFIG"
+              
+              # Проверяем и обновляем root путь
+              CURRENT_ROOT=$(grep -E "^\s*root\s+" "$NGINX_CONFIG" 2>/dev/null | head -1 | awk '{print $2}' | tr -d ';')
+              SERVER_PATH="${{ secrets.SERVER_PATH }}"
+              
+              if [ "$CURRENT_ROOT" != "$SERVER_PATH" ]; then
+                echo "⚠️  Root path mismatch. Current: $CURRENT_ROOT, Expected: $SERVER_PATH"
+                echo "   Updating root path in nginx config..."
+                sudo sed -i "s|root\s*.*;|root $SERVER_PATH;|" "$NGINX_CONFIG"
+                echo "   ✅ Root path updated"
+              fi
+              
+              # Проверяем наличие прокси для /api/webhook
+              if ! grep -q "location /api/webhook" "$NGINX_CONFIG"; then
+                echo "⚠️  Proxy block for /api/webhook not found. Adding it..."
+                
+                # Создаем временный файл с прокси блоком
+                cat > /tmp/nginx_proxy_block.txt << 'EOF'
+    # Прокси для webhook 1С (чтобы избежать CORS) - ВАЖНО: должен быть ПЕРЕД location /
+    location /api/webhook {
+        proxy_pass https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e;
+        proxy_http_version 1.1;
+        proxy_set_header Host cloud.1c.fitness;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Content-Type application/json;
+        proxy_set_header Accept application/json;
+        proxy_buffering off;
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+        
+        # Разрешаем все методы
+        limit_except GET POST OPTIONS {
+            deny all;
+        }
+    }
+
+EOF
+                # Вставляем прокси блок перед location /
+                sudo sed -i '/^\s*location \/ {/r /tmp/nginx_proxy_block.txt' "$NGINX_CONFIG"
+                rm /tmp/nginx_proxy_block.txt
+                echo "   ✅ Proxy block added"
+              else
+                echo "   ✅ Proxy block for /api/webhook already exists"
+              fi
+              
+              # Проверяем синтаксис nginx
+              echo ""
+              echo "Testing nginx configuration..."
+              if sudo nginx -t; then
+                echo "✅ Nginx config is valid. Reloading nginx..."
+                sudo systemctl reload nginx
+                echo "✅ Nginx reloaded successfully"
+              else
+                echo "❌ Nginx config test failed! Check the config manually."
+              fi
+              
+            else
+              echo "⚠️  Nginx config not found. Please configure nginx manually."
+            fi
+            
+            echo ""
             echo "=== NGINX DIAGNOSTICS ==="
             echo ""
-            echo "1. Current nginx config for new.fcnautilus.ru:"
-            if [ -f "/etc/nginx/sites-available/new.fcnautilus.ru" ]; then
-              cat /etc/nginx/sites-available/new.fcnautilus.ru
+            echo "1. Current nginx config:"
+            if [ -n "$NGINX_CONFIG" ]; then
+              cat "$NGINX_CONFIG"
             else
-              echo "❌ Config file not found at /etc/nginx/sites-available/new.fcnautilus.ru"
-              echo "Checking sites-enabled:"
-              ls -la /etc/nginx/sites-enabled/ | grep new.fcnautilus.ru || echo "No symlink found"
+              echo "❌ Config file not found"
             fi
             echo ""
             echo "2. Root path from config:"

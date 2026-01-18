@@ -1,9 +1,12 @@
 # ИСПРАВЛЕНИЕ CORS ОШИБКИ - Настройка прокси через nginx
 
 ## Проблема
-Ошибка CORS: "Access to fetch at 'https://cloud.1c.fitness/...' from origin 'https://fcnautilus.ru' has been blocked by CORS policy"
+Ошибка 405 (Not Allowed) или CORS при отправке формы на `/api/webhook`.
 
-Браузер блокирует прямые запросы к webhook из-за CORS политики сервера.
+**Возможные причины:**
+1. Блок прокси для `/api/webhook` не настроен в nginx
+2. Блок прокси настроен неправильно (не обрабатывает POST запросы)
+3. Блок прокси находится ПОСЛЕ `location /`, поэтому не срабатывает
 
 ## Решение: Прокси через nginx
 
@@ -19,35 +22,39 @@ sudo nano /etc/nginx/sites-available/fcnautilus.ru
 sudo nano /etc/nginx/sites-available/new.fcnautilus.ru
 ```
 
-### 2. Добавьте блок прокси ПЕРЕД секцией "Безопасность"
+### 2. Добавьте блок прокси ПЕРЕД `location /`
 
-Найдите строку:
+**КРИТИЧНО:** Блок прокси должен быть ПЕРЕД `location /`, иначе он не будет работать!
+
+Найдите блок:
 ```nginx
-    # Безопасность
+    location / {
+        try_files $uri $uri/ @fallback;
+    }
 ```
 
-И **ДОБАВЬТЕ ПЕРЕД НЕЙ**:
+И **ДОБАВЬТЕ ПЕРЕД НИМ**:
 ```nginx
     # Прокси для webhook 1С (чтобы избежать CORS)
+    # ВАЖНО: должен быть ПЕРЕД location /
     location /api/webhook {
         proxy_pass https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e;
         proxy_http_version 1.1;
+        proxy_method POST;
         proxy_set_header Host cloud.1c.fitness;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Content-Type application/json;
+        proxy_set_header Accept application/json;
         proxy_buffering off;
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
         
-        # CORS headers для предварительных запросов
-        if ($request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
-            add_header 'Access-Control-Max-Age' 1728000 always;
-            add_header 'Content-Type' 'text/plain charset=UTF-8' always;
-            add_header 'Content-Length' 0 always;
-            return 204;
+        # Разрешаем все методы
+        limit_except GET POST OPTIONS {
+            deny all;
         }
     }
 ```
