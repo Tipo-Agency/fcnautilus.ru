@@ -108,56 +108,74 @@ export const sendToWebhook = async (
     console.log('Sending to webhook:', webhookUrl);
     console.log('Webhook data:', webhookData);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут
+    // Если используем прокси, пробуем сначала его
+    if (webhookUrl === WEBHOOK_PROXY_URL) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд для прокси
 
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(webhookData),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        console.log('Webhook response status:', response.status);
+        
+        if (response.ok) {
+          const responseData = await response.text().catch(() => '');
+          console.log('Webhook success (via proxy):', responseData);
+          return true;
+        }
+        
+        // Если прокси вернул ошибку, пробуем прямой URL
+        console.warn('Proxy returned error, trying direct URL with no-cors...');
+      } catch (proxyError) {
+        // Если прокси не работает (405, 404, CORS), пробуем прямой URL с no-cors
+        console.warn('Proxy failed:', proxyError);
+        if (proxyError instanceof Error && proxyError.message.includes('405')) {
+          console.warn('405 error - proxy not configured, using no-cors fallback');
+        }
+      }
+    }
+
+    // Fallback: прямой запрос с no-cors (как в panovalife.ru и open-pool.ru)
+    // В режиме no-cors мы не можем проверить response, но запрос отправится
     try {
-      const response = await fetch(webhookUrl, {
+      await fetch(WEBHOOK_DIRECT_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
         body: JSON.stringify(webhookData),
-        signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
-      console.log('Webhook response status:', response.status);
-      console.log('Webhook response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Webhook request sent (no-cors mode - response cannot be checked)');
+      return true; // В режиме no-cors считаем успешным, так как не можем проверить ответ
+    } catch (directError) {
+      console.warn('Direct no-cors fetch failed, trying sendBeacon...', directError);
       
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'No error details');
-        console.error('Webhook error:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText,
-          url: webhookUrl
-        });
-        return false;
-      }
-
-      const responseData = await response.text().catch(() => '');
-      console.log('Webhook success:', responseData);
-      return true;
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      
-      if (fetchError instanceof Error) {
-        if (fetchError.name === 'AbortError') {
-          console.error('Webhook timeout after 30 seconds');
-        } else if (fetchError.message.includes('CORS')) {
-          console.error('Webhook CORS error:', fetchError.message);
-        } else if (fetchError.message.includes('network') || fetchError.message.includes('Failed to fetch')) {
-          console.error('Webhook network error:', fetchError.message);
-        } else {
-          console.error('Webhook fetch error:', fetchError.message, fetchError.stack);
+      // Последняя попытка через sendBeacon (работает даже при CORS)
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        try {
+          const blob = new Blob([JSON.stringify(webhookData)], { type: 'application/json' });
+          const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
+          if (sent) {
+            console.log('Webhook sent via sendBeacon');
+            return true;
+          }
+        } catch (beaconError) {
+          console.error('SendBeacon also failed:', beaconError);
         }
-      } else {
-        console.error('Unknown webhook error:', fetchError);
       }
       
-      throw fetchError; // Пробрасываем ошибку дальше для обработки в форме
+      console.error('All webhook methods failed');
+      return false;
     }
   } catch (error) {
     console.error('Error sending to webhook:', error);
@@ -170,6 +188,7 @@ export const sendToWebhook = async (
 };
 
 // URL вебхука для клуба Южный
-// Используем прокси через nginx (/api/webhook) чтобы избежать CORS
-// Прокси настроен в nginx.conf.example для перенаправления на cloud.1c.fitness
-export const WEBHOOK_URL_SOUTH = '/api/webhook';
+// Используем прокси через nginx (/api/webhook) или прямой URL с no-cors как fallback
+const WEBHOOK_PROXY_URL = '/api/webhook';
+const WEBHOOK_DIRECT_URL = 'https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e';
+export const WEBHOOK_URL_SOUTH = WEBHOOK_PROXY_URL; // Для обратной совместимости
