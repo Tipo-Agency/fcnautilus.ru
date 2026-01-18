@@ -18,10 +18,40 @@ echo "✅ Found nginx config: $NGINX_CONFIG"
 
 # Проверяем наличие прокси для /api/webhook
 if grep -qE "location\s*=?\s*/api/webhook" "$NGINX_CONFIG"; then
-  echo "✅ Proxy block for /api/webhook already exists"
+  echo "⚠️  Proxy block for /api/webhook already exists"
   echo "Showing existing block:"
   grep -A 20 "location.*/api/webhook" "$NGINX_CONFIG" | head -25
-  exit 0
+  echo ""
+  
+  # КРИТИЧНО: Проверяем порядок блоков - если /api/webhook после location /, это вызовет 405!
+  API_LINE=$(grep -n "location.*/api/webhook" "$NGINX_CONFIG" | head -1 | cut -d: -f1)
+  LOCATION_LINE=$(grep -n "location /" "$NGINX_CONFIG" | head -1 | cut -d: -f1)
+  
+  if [ -n "$API_LINE" ] && [ -n "$LOCATION_LINE" ]; then
+    if [ "$API_LINE" -lt "$LOCATION_LINE" ]; then
+      echo "✅ Proxy block is correctly placed BEFORE location / (line $API_LINE < $LOCATION_LINE)"
+      echo "✅ Configuration is correct. Exiting."
+      exit 0
+    else
+      echo "❌ ERROR: Proxy block is AFTER location / (line $API_LINE > $LOCATION_LINE)"
+      echo "⚠️  This will cause 405 errors! Need to fix the order."
+      echo ""
+      read -p "Fix the order now? (y/n) " -n 1 -r
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "⚠️  Skipping fix. Please fix manually or run script again."
+        exit 1
+      fi
+      echo "Removing incorrect block and re-adding in correct position..."
+      # Удаляем неправильно размещенный блок (от location до закрывающей скобки)
+      sed -i '/location.*\/api\/webhook/,/^[[:space:]]*}/d' "$NGINX_CONFIG"
+      echo "✅ Removed incorrect block. Will add in correct position below..."
+    fi
+  else
+    echo "⚠️  Could not determine line numbers. Block exists but order is unknown."
+    echo "⚠️  If you see 405 errors, block might be after location /"
+    exit 0
+  fi
 fi
 
 echo "⚠️  Proxy block for /api/webhook not found. Adding it..."
