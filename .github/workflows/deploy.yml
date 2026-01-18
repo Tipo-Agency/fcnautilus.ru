@@ -117,27 +117,34 @@ jobs:
               fi
               
               # Проверяем наличие прокси для /api/webhook
-              if ! grep -q "location /api/webhook" "$NGINX_CONFIG"; then
+              if ! grep -q "location.*=.*/api/webhook\|location /api/webhook" "$NGINX_CONFIG"; then
                 echo "⚠️  Proxy block for /api/webhook not found. Adding it..."
-                # Создаем прокси блок через printf с правильным экранированием nginx переменных ($ в одинарных кавычках = строка)
+                # Создаем прокси блок через printf (используем = для точного совпадения как в fcriverclub.ru)
                 sudo printf '%s\n' \
                   '    # Прокси для webhook 1С (чтобы избежать CORS) - ВАЖНО: должен быть ПЕРЕД location /' \
-                  '    location /api/webhook {' \
+                  '    location = /api/webhook {' \
+                  '        if ($request_method = '\''OPTIONS'\'') {' \
+                  '            add_header '\''Access-Control-Allow-Origin'\'' '\''*'\'' always;' \
+                  '            add_header '\''Access-Control-Allow-Methods'\'' '\''POST, OPTIONS'\'' always;' \
+                  '            add_header '\''Access-Control-Allow-Headers'\'' '\''Content-Type'\'' always;' \
+                  '            add_header '\''Access-Control-Max-Age'\'' 1728000;' \
+                  '            add_header '\''Content-Type'\'' '\''text/plain; charset=utf-8'\'';' \
+                  '            add_header '\''Content-Length'\'' 0;' \
+                  '            return 204;' \
+                  '        }' \
                   '        proxy_pass https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e;' \
-                  '        proxy_http_version 1.1;' \
                   '        proxy_set_header Host cloud.1c.fitness;' \
                   '        proxy_set_header X-Real-IP $remote_addr;' \
                   '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' \
                   '        proxy_set_header X-Forwarded-Proto $scheme;' \
-                  '        proxy_set_header Content-Type application/json;' \
-                  '        proxy_set_header Accept application/json;' \
                   '        proxy_buffering off;' \
-                  '        proxy_connect_timeout 30s;' \
-                  '        proxy_send_timeout 30s;' \
-                  '        proxy_read_timeout 30s;' \
-                  '        limit_except GET POST OPTIONS {' \
-                  '            deny all;' \
-                  '        }' \
+                  '        proxy_request_buffering off;' \
+                  '        proxy_ssl_server_name on;' \
+                  '        proxy_ssl_verify off;' \
+                  '        proxy_http_version 1.1;' \
+                  '        add_header '\''Access-Control-Allow-Origin'\'' '\''*'\'' always;' \
+                  '        add_header '\''Access-Control-Allow-Methods'\'' '\''POST, OPTIONS'\'' always;' \
+                  '        add_header '\''Access-Control-Allow-Headers'\'' '\''Content-Type'\'' always;' \
                   '    }' \
                   '' > /tmp/nginx_proxy_block.txt
                 # Пробуем найти location / и вставить перед ним (разные варианты паттерна)
