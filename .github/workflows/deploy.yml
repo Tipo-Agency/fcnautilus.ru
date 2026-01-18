@@ -119,34 +119,30 @@ jobs:
               # Проверяем наличие прокси для /api/webhook
               if ! grep -q "location /api/webhook" "$NGINX_CONFIG"; then
                 echo "⚠️  Proxy block for /api/webhook not found. Adding it..."
-                
-                # Создаем временный файл с прокси блоком
-                cat > /tmp/nginx_proxy_block.txt << 'EOF'
-    # Прокси для webhook 1С (чтобы избежать CORS) - ВАЖНО: должен быть ПЕРЕД location /
-    location /api/webhook {
-        proxy_pass https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e;
-        proxy_http_version 1.1;
-        proxy_set_header Host cloud.1c.fitness;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Content-Type application/json;
-        proxy_set_header Accept application/json;
-        proxy_buffering off;
-        proxy_connect_timeout 30s;
-        proxy_send_timeout 30s;
-        proxy_read_timeout 30s;
-        
-        # Разрешаем все методы
-        limit_except GET POST OPTIONS {
-            deny all;
-        }
-    }
-
-EOF
+                # Создаем прокси блок через printf (без heredoc для YAML совместимости)
+                sudo printf '%s\n' \
+                  '    # Прокси для webhook 1С (чтобы избежать CORS) - ВАЖНО: должен быть ПЕРЕД location /' \
+                  '    location /api/webhook {' \
+                  '        proxy_pass https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e;' \
+                  '        proxy_http_version 1.1;' \
+                  '        proxy_set_header Host cloud.1c.fitness;' \
+                  '        proxy_set_header X-Real-IP $remote_addr;' \
+                  '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' \
+                  '        proxy_set_header X-Forwarded-Proto $scheme;' \
+                  '        proxy_set_header Content-Type application/json;' \
+                  '        proxy_set_header Accept application/json;' \
+                  '        proxy_buffering off;' \
+                  '        proxy_connect_timeout 30s;' \
+                  '        proxy_send_timeout 30s;' \
+                  '        proxy_read_timeout 30s;' \
+                  '        limit_except GET POST OPTIONS {' \
+                  '            deny all;' \
+                  '        }' \
+                  '    }' \
+                  '' > /tmp/nginx_proxy_block.txt
                 # Вставляем прокси блок перед location /
                 sudo sed -i '/^\s*location \/ {/r /tmp/nginx_proxy_block.txt' "$NGINX_CONFIG"
-                rm /tmp/nginx_proxy_block.txt
+                sudo rm -f /tmp/nginx_proxy_block.txt
                 echo "   ✅ Proxy block added"
               else
                 echo "   ✅ Proxy block for /api/webhook already exists"
