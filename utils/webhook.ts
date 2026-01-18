@@ -170,8 +170,6 @@ export const sendToWebhook = async (
 };
 
 // URL вебхука для клуба Южный
-// В режиме разработки используем прокси, в продакшене - прямой URL
-const isDevelopment = import.meta.env.DEV;
-export const WEBHOOK_URL_SOUTH = isDevelopment 
-  ? '/api/webhook'
-  : 'https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e';
+// Используем прокси через nginx (/api/webhook) чтобы избежать CORS
+// Прокси настроен в nginx.conf.example для перенаправления на cloud.1c.fitness
+export const WEBHOOK_URL_SOUTH = '/api/webhook';
