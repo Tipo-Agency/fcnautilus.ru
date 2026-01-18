@@ -141,6 +141,10 @@ export const sendToWebhook = async (
         if (response.ok) {
           const responseData = await response.text().catch(() => '');
           console.log('Webhook success (via proxy):', responseData);
+          // Помечаем, что использовался прокси
+          if (typeof window !== 'undefined') {
+            (window as any).__lastWebhookMethod = 'proxy';
+          }
           return true;
         }
         
@@ -168,6 +172,10 @@ export const sendToWebhook = async (
       
       if (directResponse.ok) {
         console.log('Webhook success (direct URL):', directResponse.status);
+        // Помечаем, что использовался прямой URL
+        if (typeof window !== 'undefined') {
+          (window as any).__lastWebhookMethod = 'direct';
+        }
         return true;
       } else {
         const errorText = await directResponse.text().catch(() => '');
@@ -197,13 +205,19 @@ export const sendToWebhook = async (
         if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
           try {
             const blob = new Blob([JSON.stringify(webhookData)], { type: 'application/json' });
-            const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
-            if (sent) {
-              console.log('Webhook sent via sendBeacon (CORS bypass - cannot verify response)');
-              return true; // sendBeacon всегда возвращает true если принят браузером
-            } else {
-              console.error('sendBeacon returned false - request was rejected');
+          const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
+          if (sent) {
+            console.log('Webhook sent via sendBeacon (CORS bypass - cannot verify response)');
+            console.warn('⚠️  WARNING: Using sendBeacon fallback. Request sent but server response cannot be verified.');
+            console.warn('⚠️  This usually means Nginx proxy is not configured. Please check server configuration.');
+            // Помечаем, что использовался sendBeacon
+            if (typeof window !== 'undefined') {
+              (window as any).__lastWebhookMethod = 'sendBeacon';
             }
+            return true; // sendBeacon всегда возвращает true если принят браузером
+          } else {
+            console.error('sendBeacon returned false - request was rejected');
+          }
           } catch (beaconError) {
             console.error('SendBeacon failed:', beaconError);
           }

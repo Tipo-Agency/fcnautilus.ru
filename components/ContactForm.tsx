@@ -45,7 +45,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ isOpen, onClose }) => {
 
       if (success) {
         console.log('Form submitted successfully to 1C');
-        alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
+        // Проверяем, не использовался ли sendBeacon (который не может проверить ответ)
+        const wasSendBeacon = console.log.toString().includes('sendBeacon') || 
+                               (window as any).__lastWebhookMethod === 'sendBeacon';
+        
+        if (wasSendBeacon) {
+          alert('Заявка отправлена. Мы свяжемся с вами в ближайшее время. Если у вас есть срочный вопрос, позвоните нам: +7 (4212) 95-09-38');
+        } else {
+          alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
+        }
         setFormData({ name: '', phone: '', email: '' });
         onClose();
       } else {
