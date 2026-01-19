@@ -106,15 +106,41 @@ export const sendToWebhook = async (
       phoneDigits = '7' + phoneDigits;
     }
     
+    // Валидация: телефон должен быть 11 цифр (7 + 10 цифр)
+    if (phoneDigits.length !== 11 || !phoneDigits.startsWith('7')) {
+      console.error('Invalid phone format:', phoneDigits, '(expected: 11 digits starting with 7)');
+      return false;
+    }
+    
+    // Собираем данные, убирая undefined значения (1C может не принимать undefined)
+    const utmParams = getUtmParams();
+    const metricsParams = getMetricsParams();
+    
     const webhookData: WebhookData = {
-      name,
-      last_name,
+      name: name || '',
+      last_name: last_name || '',
       phone: phoneDigits, // Только цифры, начинается с 7
-      email: data.email || undefined,
       comment: data.comment || 'Новая заявка с сайта',
-      ...getUtmParams(),
-      ...getMetricsParams(),
     };
+    
+    // Добавляем email только если он есть
+    if (data.email && data.email.trim()) {
+      webhookData.email = data.email.trim();
+    }
+    
+    // Добавляем UTM параметры только если они есть
+    if (utmParams.utm_source) webhookData.utm_source = utmParams.utm_source;
+    if (utmParams.utm_medium) webhookData.utm_medium = utmParams.utm_medium;
+    if (utmParams.utm_campaign) webhookData.utm_campaign = utmParams.utm_campaign;
+    if (utmParams.utm_term) webhookData.utm_term = utmParams.utm_term;
+    if (utmParams.utm_content) webhookData.utm_content = utmParams.utm_content;
+    
+    // Добавляем метрики только если они есть
+    if (metricsParams.ga_cid) webhookData.ga_cid = metricsParams.ga_cid;
+    if (metricsParams.ym_cid) webhookData.ym_cid = metricsParams.ym_cid;
+    if (metricsParams.rs_cid) webhookData.rs_cid = metricsParams.rs_cid;
+    if (metricsParams.rs_vid) webhookData.rs_vid = metricsParams.rs_vid;
+    if (metricsParams.ct_cid) webhookData.ct_cid = metricsParams.ct_cid;
 
     console.log('=== WEBHOOK REQUEST ===');
     console.log('URL:', webhookUrl);
