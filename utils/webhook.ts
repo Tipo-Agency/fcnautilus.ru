@@ -112,16 +112,24 @@ export const sendToWebhook = async (
       return false;
     }
     
-    // Собираем данные, убирая undefined значения (1C может не принимать undefined)
+    // Собираем данные, убирая undefined и пустые строки (1C может не принимать их)
     const utmParams = getUtmParams();
     const metricsParams = getMetricsParams();
     
     const webhookData: WebhookData = {
-      name: name || '',
-      last_name: last_name || '',
-      phone: phoneDigits, // Только цифры, начинается с 7
+      phone: phoneDigits, // Только цифры, начинается с 7 - обязательное поле
       comment: data.comment || 'Новая заявка с сайта',
     };
+    
+    // Добавляем name только если оно не пустое
+    if (name && name.trim()) {
+      webhookData.name = name.trim();
+    }
+    
+    // Добавляем last_name только если оно не пустое
+    if (last_name && last_name.trim()) {
+      webhookData.last_name = last_name.trim();
+    }
     
     // Добавляем email только если он есть
     if (data.email && data.email.trim()) {
@@ -205,13 +213,18 @@ export const sendToWebhook = async (
     // Fallback: прямой запрос с no-cors (как в open-pool.ru и panovalife.ru)
     // В режиме no-cors мы не можем проверить response, но запрос отправится и обойдет CORS
     try {
+      // Убираем пустые значения из JSON перед отправкой (1C может не принимать их)
+      const cleanData = Object.fromEntries(
+        Object.entries(webhookData).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+      );
+      
       await fetch(WEBHOOK_DIRECT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(webhookData),
+        body: JSON.stringify(cleanData),
       });
       // В режиме no-cors нет ошибки = запрос отправился успешно
       console.log('Webhook request sent (no-cors mode - response cannot be checked)');
@@ -228,7 +241,11 @@ export const sendToWebhook = async (
       // Последняя попытка через sendBeacon (работает даже при CORS)
       if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
         try {
-          const blob = new Blob([JSON.stringify(webhookData)], { type: 'application/json' });
+          // Убираем пустые значения из JSON перед отправкой
+          const cleanData = Object.fromEntries(
+            Object.entries(webhookData).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+          );
+          const blob = new Blob([JSON.stringify(cleanData)], { type: 'application/json' });
           const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
           if (sent) {
             console.log('Webhook sent via sendBeacon (CORS bypass - cannot verify response)');
