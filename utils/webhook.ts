@@ -116,8 +116,25 @@ export const sendToWebhook = async (
       ...getMetricsParams(),
     };
 
-    console.log('Sending to webhook:', webhookUrl);
-    console.log('Webhook data:', webhookData);
+    console.log('=== WEBHOOK REQUEST ===');
+    console.log('URL:', webhookUrl);
+    console.log('Data:', JSON.stringify(webhookData, null, 2));
+    console.log('Phone format:', webhookData.phone, '(length:', webhookData.phone.length, ')');
+    console.log('Name:', webhookData.name, '| Last name:', webhookData.last_name);
+    console.log('Email:', webhookData.email || 'not provided');
+    console.log('Comment:', webhookData.comment);
+    console.log('UTM params:', {
+      utm_source: webhookData.utm_source,
+      utm_medium: webhookData.utm_medium,
+      utm_campaign: webhookData.utm_campaign,
+    });
+    console.log('Analytics IDs:', {
+      ga_cid: webhookData.ga_cid,
+      ym_cid: webhookData.ym_cid,
+      rs_cid: webhookData.rs_cid,
+      ct_cid: webhookData.ct_cid,
+    });
+    console.log('========================');
 
     // Если используем прокси, пробуем сначала его
     if (webhookUrl === WEBHOOK_PROXY_URL) {
@@ -159,57 +176,37 @@ export const sendToWebhook = async (
       }
     }
 
-    // Fallback: прямой запрос БЕЗ no-cors (пробуем проверить ответ)
-    // Если CORS блокирует - используем sendBeacon как последний вариант
+    // Fallback: прямой запрос с no-cors (как в open-pool.ru и panovalife.ru)
+    // В режиме no-cors мы не можем проверить response, но запрос отправится и обойдет CORS
     try {
-      const directResponse = await fetch(WEBHOOK_DIRECT_URL, {
+      await fetch(WEBHOOK_DIRECT_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(webhookData),
       });
-      
-      if (directResponse.ok) {
-        console.log('Webhook success (direct URL):', directResponse.status);
-        // Помечаем, что использовался прямой URL
-        if (typeof window !== 'undefined') {
-          (window as any).__lastWebhookMethod = 'direct';
-        }
-        return true;
-      } else {
-        const errorText = await directResponse.text().catch(() => '');
-        console.error('Webhook direct URL error:', {
-          status: directResponse.status,
-          statusText: directResponse.statusText,
-          errorText,
-          url: WEBHOOK_DIRECT_URL
-        });
-        
-        // Если сервер вернул ошибку (500, 400 и т.д.) - это не CORS, это реальная ошибка
-        // Не используем sendBeacon, так как он тоже не поможет при 500
-        return false;
+      // В режиме no-cors нет ошибки = запрос отправился успешно
+      console.log('Webhook request sent (no-cors mode - response cannot be checked)');
+      console.warn('⚠️  NOTE: Using no-cors mode. Request sent but server response cannot be verified.');
+      console.warn('⚠️  This usually means Nginx proxy is not configured. Please check server configuration.');
+      // Помечаем, что использовался no-cors
+      if (typeof window !== 'undefined') {
+        (window as any).__lastWebhookMethod = 'no-cors';
       }
+      return true; // В режиме no-cors считаем успешным, так как не можем проверить ответ
     } catch (directError) {
-      // Если ошибка из-за CORS (TypeError: Failed to fetch) - пробуем sendBeacon
-      const isCorsError = directError instanceof TypeError && 
-                          (directError.message.includes('Failed to fetch') || 
-                           directError.message.includes('CORS') ||
-                           directError.message.includes('NetworkError'));
+      console.warn('Direct no-cors fetch failed, trying sendBeacon...', directError);
       
-      if (isCorsError) {
-        console.warn('Direct fetch failed due to CORS, trying sendBeacon...', directError);
-        
-        // Последняя попытка через sendBeacon (работает даже при CORS)
-        // sendBeacon не блокирует CORS и отправляет данные в фоне
-        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-          try {
-            const blob = new Blob([JSON.stringify(webhookData)], { type: 'application/json' });
+      // Последняя попытка через sendBeacon (работает даже при CORS)
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        try {
+          const blob = new Blob([JSON.stringify(webhookData)], { type: 'application/json' });
           const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
           if (sent) {
             console.log('Webhook sent via sendBeacon (CORS bypass - cannot verify response)');
             console.warn('⚠️  WARNING: Using sendBeacon fallback. Request sent but server response cannot be verified.');
-            console.warn('⚠️  This usually means Nginx proxy is not configured. Please check server configuration.');
             // Помечаем, что использовался sendBeacon
             if (typeof window !== 'undefined') {
               (window as any).__lastWebhookMethod = 'sendBeacon';
@@ -218,15 +215,11 @@ export const sendToWebhook = async (
           } else {
             console.error('sendBeacon returned false - request was rejected');
           }
-          } catch (beaconError) {
-            console.error('SendBeacon failed:', beaconError);
-          }
-        } else {
-          console.error('sendBeacon not available');
+        } catch (beaconError) {
+          console.error('SendBeacon failed:', beaconError);
         }
       } else {
-        // Если ошибка не CORS (например, AbortError) - просто возвращаем false
-        console.error('Direct fetch failed (not CORS):', directError);
+        console.error('sendBeacon not available');
       }
       
       console.error('All webhook methods failed');

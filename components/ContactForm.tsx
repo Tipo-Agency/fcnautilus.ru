@@ -45,12 +45,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ isOpen, onClose }) => {
 
       if (success) {
         console.log('Form submitted successfully to 1C');
-        // Проверяем, не использовался ли sendBeacon (который не может проверить ответ)
-        const wasSendBeacon = console.log.toString().includes('sendBeacon') || 
-                               (window as any).__lastWebhookMethod === 'sendBeacon';
+        // Проверяем метод отправки
+        const method = (window as any).__lastWebhookMethod;
+        const isUnverified = method === 'sendBeacon' || method === 'no-cors';
         
-        if (wasSendBeacon) {
+        if (isUnverified) {
           alert('Заявка отправлена. Мы свяжемся с вами в ближайшее время. Если у вас есть срочный вопрос, позвоните нам: +7 (4212) 95-09-38');
+          console.warn('⚠️  Form submitted via fallback method (no-cors/sendBeacon). Server response cannot be verified.');
         } else {
           alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
         }
