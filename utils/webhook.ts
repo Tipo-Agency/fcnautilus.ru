@@ -170,44 +170,56 @@ export const sendToWebhook = async (
     });
     console.log('========================');
 
-    // Если используем прокси, пробуем сначала его
-    if (webhookUrl === WEBHOOK_PROXY_URL) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд для прокси
+    // Пробуем PHP прокси, потом nginx прокси, потом прямой URL
+    const proxyUrls = [
+      { url: WEBHOOK_PHP_PROXY, name: 'PHP proxy' },
+      { url: WEBHOOK_NGINX_PROXY, name: 'Nginx proxy' }
+    ];
+    
+    // Если используем прокси URL, пробуем все варианты
+    if (webhookUrl === WEBHOOK_PHP_PROXY || webhookUrl === WEBHOOK_NGINX_PROXY) {
+      for (const proxy of proxyUrls) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд для прокси
 
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify(webhookData),
-          signal: controller.signal,
-        });
+          const response = await fetch(proxy.url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify(webhookData),
+            signal: controller.signal,
+          });
 
-        clearTimeout(timeoutId);
-        console.log('Webhook response status:', response.status);
-        
-        if (response.ok) {
-          const responseData = await response.text().catch(() => '');
-          console.log('Webhook success (via proxy):', responseData);
-          // Помечаем, что использовался прокси
-          if (typeof window !== 'undefined') {
-            (window as any).__lastWebhookMethod = 'proxy';
+          clearTimeout(timeoutId);
+          console.log(`${proxy.name} response status:`, response.status);
+          
+          if (response.ok) {
+            const responseData = await response.text().catch(() => '');
+            console.log(`Webhook success (via ${proxy.name}):`, responseData);
+            // Помечаем, что использовался прокси
+            if (typeof window !== 'undefined') {
+              (window as any).__lastWebhookMethod = proxy.name.toLowerCase().replace(' ', '-');
+            }
+            return true;
           }
-          return true;
-        }
-        
-        // Если прокси вернул ошибку, пробуем прямой URL
-        console.warn('Proxy returned error, trying direct URL with no-cors...');
-      } catch (proxyError) {
-        // Если прокси не работает (405, 404, CORS), пробуем прямой URL с no-cors
-        console.warn('Proxy failed:', proxyError);
-        if (proxyError instanceof Error && proxyError.message.includes('405')) {
-          console.warn('405 error - proxy not configured, using no-cors fallback');
+          
+          // Если прокси вернул ошибку, пробуем следующий вариант
+          console.warn(`${proxy.name} returned error ${response.status}, trying next option...`);
+        } catch (proxyError) {
+          // Если прокси не работает (405, 404, CORS), пробуем следующий вариант
+          console.warn(`${proxy.name} failed:`, proxyError);
+          if (proxyError instanceof Error && proxyError.message.includes('405')) {
+            console.warn(`405 error - ${proxy.name} not configured, trying next option...`);
+          }
+          continue; // Пробуем следующий прокси
         }
       }
+      
+      // Если все прокси не сработали, пробуем прямой URL
+      console.warn('All proxies failed, trying direct URL with no-cors...');
     }
 
     // Fallback: прямой запрос с no-cors (как в open-pool.ru и panovalife.ru)
@@ -279,7 +291,8 @@ export const sendToWebhook = async (
 };
 
 // URL вебхука для клуба Южный
-// Используем прокси через nginx (/api/webhook) или прямой URL с no-cors как fallback
-const WEBHOOK_PROXY_URL = '/api/webhook';
+// Сначала пробуем PHP прокси (если есть), потом nginx прокси, потом прямой URL
+const WEBHOOK_PHP_PROXY = '/api/webhook.php';
+const WEBHOOK_NGINX_PROXY = '/api/webhook';
 const WEBHOOK_DIRECT_URL = 'https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e';
-export const WEBHOOK_URL_SOUTH = WEBHOOK_PROXY_URL; // Для обратной совместимости
+export const WEBHOOK_URL_SOUTH = WEBHOOK_PHP_PROXY; // Используем PHP прокси как основной
