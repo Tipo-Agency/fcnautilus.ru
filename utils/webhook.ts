@@ -70,15 +70,18 @@ export const getMetricsParams = (): Partial<WebhookData> => {
   };
 };
 
-// Разделение имени на имя и фамилию
+// Разделение имени на имя и фамилию (как в open-pool.ru)
 const splitName = (fullName: string): { name: string; last_name: string } => {
   const parts = fullName.trim().split(/\s+/);
-  if (parts.length === 1) {
-    return { name: parts[0], last_name: '' };
+  if (parts.length >= 2) {
+    return {
+      name: parts[0],
+      last_name: parts.slice(1).join(' ')
+    };
   }
   return {
-    name: parts[0],
-    last_name: parts.slice(1).join(' ')
+    name: fullName || '',
+    last_name: ''
   };
 };
 
@@ -112,38 +115,31 @@ export const sendToWebhook = async (
       return false;
     }
     
-    // Формируем данные точно как в open-pool.ru
+    // Формируем данные ТОЧНО как в panovalife.ru и open-pool.ru
     const utmParams = getUtmParams();
     const metricsParams = getMetricsParams();
     
+    // В panovalife.ru они отправляют пустые строки, а не undefined
     const webhookData: WebhookData = {
       name: name,
       last_name: last_name,
       phone: phoneDigits.startsWith('7') ? phoneDigits : `7${phoneDigits}`,
-      email: data.email || undefined,
+      email: data.email || '',
       comment: data.comment || 'Новая заявка с сайта',
       ...utmParams,
       ...metricsParams,
     };
+    
+    // Используем данные как есть (без фильтрации) - как в panovalife.ru
+    const cleanData = webhookData;
 
     console.log('=== WEBHOOK REQUEST ===');
     console.log('URL:', webhookUrl);
-    console.log('Data:', JSON.stringify(webhookData, null, 2));
-    console.log('Phone format:', webhookData.phone, '(length:', webhookData.phone.length, ')');
-    console.log('Name:', webhookData.name, '| Last name:', webhookData.last_name);
-    console.log('Email:', webhookData.email || 'not provided');
-    console.log('Comment:', webhookData.comment);
-    console.log('UTM params:', {
-      utm_source: webhookData.utm_source,
-      utm_medium: webhookData.utm_medium,
-      utm_campaign: webhookData.utm_campaign,
-    });
-    console.log('Analytics IDs:', {
-      ga_cid: webhookData.ga_cid,
-      ym_cid: webhookData.ym_cid,
-      rs_cid: webhookData.rs_cid,
-      ct_cid: webhookData.ct_cid,
-    });
+    console.log('Data (cleaned):', JSON.stringify(cleanData, null, 2));
+    console.log('Phone format:', cleanData.phone, '(length:', cleanData.phone.length, ')');
+    console.log('Name:', cleanData.name || 'not provided', '| Last name:', cleanData.last_name || 'not provided');
+    console.log('Email:', cleanData.email || 'not provided');
+    console.log('Comment:', cleanData.comment);
     console.log('========================');
 
     // КАК В OPEN-POOL.RU: В dev режиме пробуем прокси Vite, в production - прямой URL с no-cors
@@ -157,7 +153,7 @@ export const sendToWebhook = async (
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(webhookData),
+          body: JSON.stringify(cleanData),
         });
 
         if (response.ok) {
