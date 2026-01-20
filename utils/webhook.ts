@@ -112,43 +112,19 @@ export const sendToWebhook = async (
       return false;
     }
     
-    // Собираем данные, убирая undefined и пустые строки (1C может не принимать их)
+    // Формируем данные точно как в open-pool.ru
     const utmParams = getUtmParams();
     const metricsParams = getMetricsParams();
     
     const webhookData: WebhookData = {
-      phone: phoneDigits, // Только цифры, начинается с 7 - обязательное поле
+      name: name,
+      last_name: last_name,
+      phone: phoneDigits.startsWith('7') ? phoneDigits : `7${phoneDigits}`,
+      email: data.email || undefined,
       comment: data.comment || 'Новая заявка с сайта',
+      ...utmParams,
+      ...metricsParams,
     };
-    
-    // Добавляем name только если оно не пустое
-    if (name && name.trim()) {
-      webhookData.name = name.trim();
-    }
-    
-    // Добавляем last_name только если оно не пустое
-    if (last_name && last_name.trim()) {
-      webhookData.last_name = last_name.trim();
-    }
-    
-    // Добавляем email только если он есть
-    if (data.email && data.email.trim()) {
-      webhookData.email = data.email.trim();
-    }
-    
-    // Добавляем UTM параметры только если они есть
-    if (utmParams.utm_source) webhookData.utm_source = utmParams.utm_source;
-    if (utmParams.utm_medium) webhookData.utm_medium = utmParams.utm_medium;
-    if (utmParams.utm_campaign) webhookData.utm_campaign = utmParams.utm_campaign;
-    if (utmParams.utm_term) webhookData.utm_term = utmParams.utm_term;
-    if (utmParams.utm_content) webhookData.utm_content = utmParams.utm_content;
-    
-    // Добавляем метрики только если они есть
-    if (metricsParams.ga_cid) webhookData.ga_cid = metricsParams.ga_cid;
-    if (metricsParams.ym_cid) webhookData.ym_cid = metricsParams.ym_cid;
-    if (metricsParams.rs_cid) webhookData.rs_cid = metricsParams.rs_cid;
-    if (metricsParams.rs_vid) webhookData.rs_vid = metricsParams.rs_vid;
-    if (metricsParams.ct_cid) webhookData.ct_cid = metricsParams.ct_cid;
 
     console.log('=== WEBHOOK REQUEST ===');
     console.log('URL:', webhookUrl);
@@ -170,126 +146,66 @@ export const sendToWebhook = async (
     });
     console.log('========================');
 
-    // Используем только PHP backend endpoint (Browser → Backend → 1C)
-    if (webhookUrl === WEBHOOK_PHP_PROXY || webhookUrl === WEBHOOK_NGINX_PROXY) {
+    // КАК В OPEN-POOL.RU: В dev режиме пробуем прокси Vite, в production - прямой URL с no-cors
+    const isDev = typeof import.meta !== 'undefined' && (import.meta as any).env?.MODE === 'development';
+    
+    if (isDev) {
+      // В dev режиме пробуем через прокси Vite
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд таймаут
-
-        const response = await fetch(WEBHOOK_PHP_PROXY, {
+        const response = await fetch(WEBHOOK_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
           },
           body: JSON.stringify(webhookData),
-          signal: controller.signal,
         });
 
-        clearTimeout(timeoutId);
-        console.log('Backend response status:', response.status);
-        
-        const responseData = await response.text().catch(() => '');
-        
         if (response.ok) {
-          console.log('✅ Webhook success (via PHP backend):', responseData);
+          console.log('✅ Webhook success (via Vite proxy in dev)');
           if (typeof window !== 'undefined') {
-            (window as any).__lastWebhookMethod = 'php-backend';
+            (window as any).__lastWebhookMethod = 'vite-proxy';
           }
           return true;
         }
-        
-        // Если backend вернул ошибку, пробуем nginx прокси как fallback
-        console.warn(`Backend returned error ${response.status}:`, responseData);
-        
-        // Пробуем nginx прокси как fallback
-        try {
-          const nginxResponse = await fetch(WEBHOOK_NGINX_PROXY, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: JSON.stringify(webhookData),
-          });
-          
-          if (nginxResponse.ok) {
-            console.log('✅ Webhook success (via Nginx proxy fallback)');
-            if (typeof window !== 'undefined') {
-              (window as any).__lastWebhookMethod = 'nginx-proxy';
-            }
-            return true;
-          }
-        } catch (nginxError) {
-          console.warn('Nginx proxy fallback also failed:', nginxError);
-        }
-        
-        // Если и nginx не сработал, пробуем прямой URL
-        console.warn('All proxies failed, trying direct URL with no-cors...');
-      } catch (backendError) {
-        console.warn('Backend failed:', backendError);
-        if (backendError instanceof Error && (backendError.message.includes('405') || backendError.message.includes('404'))) {
-          console.warn('Backend endpoint not available (PHP not configured?), trying direct URL...');
-        }
+      } catch (proxyError) {
+        // В dev режиме прокси должен работать, но на всякий случай fallback
+        console.warn('Dev proxy failed, using direct URL:', proxyError);
       }
     }
-
-    // Fallback: прямой запрос с no-cors (как в open-pool.ru и panovalife.ru)
+    
+    // В production (и fallback в dev) - прямой запрос с no-cors (КАК В OPEN-POOL.RU)
     // В режиме no-cors мы не можем проверить response, но запрос отправится и обойдет CORS
     try {
-      // Убираем пустые значения из JSON перед отправкой (1C может не принимать их)
-      const cleanData = Object.fromEntries(
-        Object.entries(webhookData).filter(([_, v]) => v !== undefined && v !== null && v !== '')
-      );
-      
       await fetch(WEBHOOK_DIRECT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(cleanData),
+        body: JSON.stringify(webhookData),
       });
       // В режиме no-cors нет ошибки = запрос отправился успешно
-      console.log('Webhook request sent (no-cors mode - response cannot be checked)');
-      console.warn('⚠️  NOTE: Using no-cors mode. Request sent but server response cannot be verified.');
-      console.warn('⚠️  This usually means Nginx proxy is not configured. Please check server configuration.');
-      // Помечаем, что использовался no-cors
+      console.log('✅ Webhook request sent (no-cors mode - как в open-pool.ru)');
       if (typeof window !== 'undefined') {
         (window as any).__lastWebhookMethod = 'no-cors';
       }
-      return true; // В режиме no-cors считаем успешным, так как не можем проверить ответ
+      return true;
     } catch (directError) {
-      console.warn('Direct no-cors fetch failed, trying sendBeacon...', directError);
+      console.warn('Direct fetch failed, trying sendBeacon:', directError);
       
       // Последняя попытка через sendBeacon (работает даже при CORS)
-      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-        try {
-          // Убираем пустые значения из JSON перед отправкой
-          const cleanData = Object.fromEntries(
-            Object.entries(webhookData).filter(([_, v]) => v !== undefined && v !== null && v !== '')
-          );
-          const blob = new Blob([JSON.stringify(cleanData)], { type: 'application/json' });
-          const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
-          if (sent) {
-            console.log('Webhook sent via sendBeacon (CORS bypass - cannot verify response)');
-            console.warn('⚠️  WARNING: Using sendBeacon fallback. Request sent but server response cannot be verified.');
-            // Помечаем, что использовался sendBeacon
-            if (typeof window !== 'undefined') {
-              (window as any).__lastWebhookMethod = 'sendBeacon';
-            }
-            return true; // sendBeacon всегда возвращает true если принят браузером
-          } else {
-            console.error('sendBeacon returned false - request was rejected');
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(webhookData)], { type: 'application/json' });
+        const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
+        if (sent) {
+          console.log('✅ Webhook sent via sendBeacon');
+          if (typeof window !== 'undefined') {
+            (window as any).__lastWebhookMethod = 'sendBeacon';
           }
-        } catch (beaconError) {
-          console.error('SendBeacon failed:', beaconError);
+          return sent;
         }
-      } else {
-        console.error('sendBeacon not available');
       }
       
-      console.error('All webhook methods failed');
       return false;
     }
   } catch (error) {
@@ -303,8 +219,7 @@ export const sendToWebhook = async (
 };
 
 // URL вебхука для клуба Южный
-// Сначала пробуем PHP прокси (если есть), потом nginx прокси, потом прямой URL
-const WEBHOOK_PHP_PROXY = '/api/webhook.php';
-const WEBHOOK_NGINX_PROXY = '/api/webhook';
+// КАК В OPEN-POOL.RU: В dev используем прокси, в production - прямой URL с no-cors
+const WEBHOOK_URL = '/api/webhook';
 const WEBHOOK_DIRECT_URL = 'https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e';
-export const WEBHOOK_URL_SOUTH = WEBHOOK_PHP_PROXY; // Используем PHP прокси как основной
+export const WEBHOOK_URL_SOUTH = WEBHOOK_URL; // Для обратной совместимости
