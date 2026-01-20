@@ -135,7 +135,72 @@ jobs:
                 echo "   ✅ Root path updated"
               fi
               
-              # Проверяем наличие прокси для /api/webhook (проверяем оба варианта: с = и без)
+              # ПЕРВОЕ: Настраиваем обработку PHP для /api/webhook.php
+              if ! grep -qE "location\s*~\s*\^/api/.*\.php\$" "$NGINX_CONFIG"; then
+                echo "⚠️  PHP processing for /api/*.php not found. Adding it..."
+                
+                # Определяем PHP-FPM сокет (проверяем разные версии)
+                PHP_FPM_SOCKET=""
+                for php_version in php8.3-fpm php8.2-fpm php8.1-fpm php8.0-fpm php7.4-fpm; do
+                  if [ -S "/var/run/php/${php_version}.sock" ]; then
+                    PHP_FPM_SOCKET="/var/run/php/${php_version}.sock"
+                    echo "   Found PHP-FPM socket: $PHP_FPM_SOCKET"
+                    break
+                  fi
+                done
+                
+                # Если не нашли, пробуем стандартный путь
+                if [ -z "$PHP_FPM_SOCKET" ]; then
+                  PHP_FPM_SOCKET="unix:/var/run/php/php8.1-fpm.sock"
+                  echo "   Using default PHP-FPM socket: $PHP_FPM_SOCKET"
+                fi
+                
+                # Создаем блок для обработки PHP
+                sudo printf '%s\n' \
+                  '    # PHP обработка для /api/*.php - ВАЖНО: должен быть ПЕРЕД location /' \
+                  '    location ~ ^/api/.*\.php$ {' \
+                  '        fastcgi_pass '"$PHP_FPM_SOCKET"';' \
+                  '        fastcgi_index index.php;' \
+                  '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;' \
+                  '        include fastcgi_params;' \
+                  '        add_header '\''Access-Control-Allow-Origin'\'' '\''*'\'' always;' \
+                  '        add_header '\''Access-Control-Allow-Methods'\'' '\''POST, OPTIONS'\'' always;' \
+                  '        add_header '\''Access-Control-Allow-Headers'\'' '\''Content-Type'\'' always;' \
+                  '        if ($request_method = '\''OPTIONS'\'') {' \
+                  '            add_header '\''Access-Control-Allow-Origin'\'' '\''*'\'' always;' \
+                  '            add_header '\''Access-Control-Allow-Methods'\'' '\''POST, OPTIONS'\'' always;' \
+                  '            add_header '\''Access-Control-Allow-Headers'\'' '\''Content-Type'\'' always;' \
+                  '            add_header '\''Access-Control-Max-Age'\'' 1728000;' \
+                  '            add_header '\''Content-Type'\'' '\''text/plain; charset=utf-8'\'';' \
+                  '            add_header '\''Content-Length'\'' 0;' \
+                  '            return 204;' \
+                  '        }' \
+                  '    }' \
+                  '' > /tmp/nginx_php_block.txt
+                
+                # Находим location / и вставляем ПЕРЕД ним
+                LOCATION_LINE=$(grep -n "location /" "$NGINX_CONFIG" | head -1 | cut -d: -f1)
+                if [ -n "$LOCATION_LINE" ]; then
+                  echo "   Found 'location /' at line $LOCATION_LINE - inserting PHP block before it..."
+                  sudo awk -v line="$LOCATION_LINE" -v file="/tmp/nginx_php_block.txt" '
+                    NR == line {
+                      while ((getline < file) > 0) print
+                      close(file)
+                    }
+                    {print}
+                  ' "$NGINX_CONFIG" > /tmp/nginx_config_new.txt
+                  sudo mv /tmp/nginx_config_new.txt "$NGINX_CONFIG"
+                  echo "   ✅ PHP processing block added"
+                else
+                  echo "   ⚠️  Could not find 'location /' to insert PHP block"
+                fi
+                
+                sudo rm -f /tmp/nginx_php_block.txt
+              else
+                echo "   ✅ PHP processing for /api/*.php already configured"
+              fi
+              
+              # ВТОРОЕ: Проверяем наличие прокси для /api/webhook (проверяем оба варианта: с = и без)
               if ! grep -qE "location\s*=?\s*/api/webhook" "$NGINX_CONFIG"; then
                 echo "⚠️  Proxy block for /api/webhook not found. Adding it..."
                 
