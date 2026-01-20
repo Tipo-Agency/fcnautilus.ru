@@ -170,56 +170,68 @@ export const sendToWebhook = async (
     });
     console.log('========================');
 
-    // Пробуем PHP прокси, потом nginx прокси, потом прямой URL
-    const proxyUrls = [
-      { url: WEBHOOK_PHP_PROXY, name: 'PHP proxy' },
-      { url: WEBHOOK_NGINX_PROXY, name: 'Nginx proxy' }
-    ];
-    
-    // Если используем прокси URL, пробуем все варианты
+    // Используем только PHP backend endpoint (Browser → Backend → 1C)
     if (webhookUrl === WEBHOOK_PHP_PROXY || webhookUrl === WEBHOOK_NGINX_PROXY) {
-      for (const proxy of proxyUrls) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд для прокси
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд таймаут
 
-          const response = await fetch(proxy.url, {
+        const response = await fetch(WEBHOOK_PHP_PROXY, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(webhookData),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        console.log('Backend response status:', response.status);
+        
+        const responseData = await response.text().catch(() => '');
+        
+        if (response.ok) {
+          console.log('✅ Webhook success (via PHP backend):', responseData);
+          if (typeof window !== 'undefined') {
+            (window as any).__lastWebhookMethod = 'php-backend';
+          }
+          return true;
+        }
+        
+        // Если backend вернул ошибку, пробуем nginx прокси как fallback
+        console.warn(`Backend returned error ${response.status}:`, responseData);
+        
+        // Пробуем nginx прокси как fallback
+        try {
+          const nginxResponse = await fetch(WEBHOOK_NGINX_PROXY, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
             body: JSON.stringify(webhookData),
-            signal: controller.signal,
           });
-
-          clearTimeout(timeoutId);
-          console.log(`${proxy.name} response status:`, response.status);
           
-          if (response.ok) {
-            const responseData = await response.text().catch(() => '');
-            console.log(`Webhook success (via ${proxy.name}):`, responseData);
-            // Помечаем, что использовался прокси
+          if (nginxResponse.ok) {
+            console.log('✅ Webhook success (via Nginx proxy fallback)');
             if (typeof window !== 'undefined') {
-              (window as any).__lastWebhookMethod = proxy.name.toLowerCase().replace(' ', '-');
+              (window as any).__lastWebhookMethod = 'nginx-proxy';
             }
             return true;
           }
-          
-          // Если прокси вернул ошибку, пробуем следующий вариант
-          console.warn(`${proxy.name} returned error ${response.status}, trying next option...`);
-        } catch (proxyError) {
-          // Если прокси не работает (405, 404, CORS), пробуем следующий вариант
-          console.warn(`${proxy.name} failed:`, proxyError);
-          if (proxyError instanceof Error && proxyError.message.includes('405')) {
-            console.warn(`405 error - ${proxy.name} not configured, trying next option...`);
-          }
-          continue; // Пробуем следующий прокси
+        } catch (nginxError) {
+          console.warn('Nginx proxy fallback also failed:', nginxError);
+        }
+        
+        // Если и nginx не сработал, пробуем прямой URL
+        console.warn('All proxies failed, trying direct URL with no-cors...');
+      } catch (backendError) {
+        console.warn('Backend failed:', backendError);
+        if (backendError instanceof Error && (backendError.message.includes('405') || backendError.message.includes('404'))) {
+          console.warn('Backend endpoint not available (PHP not configured?), trying direct URL...');
         }
       }
-      
-      // Если все прокси не сработали, пробуем прямой URL
-      console.warn('All proxies failed, trying direct URL with no-cors...');
     }
 
     // Fallback: прямой запрос с no-cors (как в open-pool.ru и panovalife.ru)
