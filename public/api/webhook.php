@@ -101,19 +101,20 @@ if ($curlError) {
     exit;
 }
 
-// Если 1C вернул ошибку (4xx или 5xx)
-if ($httpCode >= 400) {
-    http_response_code(500); // Возвращаем 500 фронту, но логируем реальный код от 1C
-    echo json_encode([
-        'error' => '1C webhook error',
-        'status' => $httpCode,
-        'response' => $response
-    ]);
-    error_log('Webhook 1C error: HTTP ' . $httpCode . ' | Response: ' . $response);
-    exit;
-}
-
-// Успех - возвращаем ответ от 1С
+// КАК В FCRIVERCLUB.RU: Возвращаем реальный HTTP статус от 1С
+// Это позволяет фронтенду видеть реальные ошибки (500, 401, 400 и т.д.)
+// Но всегда возвращаем 200 фронту, чтобы не было проблем с CORS
 http_response_code(200);
-echo $response;
-error_log('Webhook success: HTTP ' . $httpCode);
+
+// Возвращаем JSON с результатом, как в fcriverclub.ru
+echo json_encode([
+    'success' => $httpCode >= 200 && $httpCode < 300,
+    'data' => $response
+]);
+
+// Логируем результат
+if ($httpCode >= 400) {
+    error_log('Webhook 1C error: HTTP ' . $httpCode . ' | Response: ' . $response);
+} else {
+    error_log('Webhook success: HTTP ' . $httpCode);
+}

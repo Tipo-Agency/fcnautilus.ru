@@ -133,75 +133,68 @@ export const sendToWebhook = async (
     // Используем данные как есть (без фильтрации) - как в panovalife.ru
     const cleanData = webhookData;
 
-    console.log('=== WEBHOOK REQUEST ===');
-    console.log('URL:', webhookUrl);
-    console.log('Data (cleaned):', JSON.stringify(cleanData, null, 2));
-    console.log('Phone format:', cleanData.phone, '(length:', cleanData.phone.length, ')');
-    console.log('Name:', cleanData.name || 'not provided', '| Last name:', cleanData.last_name || 'not provided');
-    console.log('Email:', cleanData.email || 'not provided');
-    console.log('Comment:', cleanData.comment);
-    console.log('========================');
-
-    // КАК В OPEN-POOL.RU: В dev режиме пробуем прокси Vite, в production - прямой URL с no-cors
-    const isDev = typeof import.meta !== 'undefined' && (import.meta as any).env?.MODE === 'development';
+    console.log('[Webhook] Отправка заявки в 1C:', cleanData);
     
-    if (isDev) {
-      // В dev режиме пробуем через прокси Vite
-      try {
-        const response = await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(cleanData),
-        });
-
-        if (response.ok) {
-          console.log('✅ Webhook success (via Vite proxy in dev)');
-          if (typeof window !== 'undefined') {
-            (window as any).__lastWebhookMethod = 'vite-proxy';
-          }
-          return true;
-        }
-      } catch (proxyError) {
-        // В dev режиме прокси должен работать, но на всякий случай fallback
-        console.warn('Dev proxy failed, using direct URL:', proxyError);
-      }
-    }
-    
-    // В production (и fallback в dev) - прямой запрос с no-cors (КАК В OPEN-POOL.RU)
-    // В режиме no-cors мы не можем проверить response, но запрос отправится и обойдет CORS
+    // КАК В FCRIVERCLUB.RU: Используем прокси как основной метод
+    // В dev режиме используем Vite прокси, в production - PHP прокси
+    // Прокси возвращает полный ответ от 1С, можно проверить реальные ошибки
     try {
-      await fetch(WEBHOOK_DIRECT_URL, {
+      const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(webhookData),
+        body: JSON.stringify(cleanData),
       });
-      // В режиме no-cors нет ошибки = запрос отправился успешно
-      console.log('✅ Webhook request sent (no-cors mode - как в open-pool.ru)');
-      if (typeof window !== 'undefined') {
-        (window as any).__lastWebhookMethod = 'no-cors';
+      
+      console.log('[Webhook] Ответ сервера:', response.status, response.statusText);
+      
+      // Проверяем статус ответа
+      const responseText = await response.text().catch(() => '');
+      
+      console.log('[Webhook] Полный ответ от 1C:', responseText);
+      
+      // Если ответ не OK, возвращаем ошибку
+      if (!response.ok) {
+        console.error('[Webhook] Failed to send lead:', {
+          status: response.status,
+          statusText: response.statusText,
+          response: responseText
+        });
+        return false;
       }
+      
+      // Пытаемся распарсить JSON ответ (может быть пустой или не JSON)
+      let result;
+      try {
+        result = responseText ? JSON.parse(responseText) : {};
+        console.log('[Webhook] Распарсенный ответ от 1C:', result);
+      } catch (e) {
+        // Если ответ не JSON, но статус OK - считаем успехом
+        console.log('[Webhook] Ответ не JSON, но статус OK. Текст ответа:', responseText);
+        result = {};
+      }
+      
+      // Если 1C вернул ошибку в JSON
+      if (result.error) {
+        console.error('[Webhook] 1C returned error:', result.error);
+        return false;
+      }
+      
+      // Проверяем есть ли в ответе информация об успехе или ошибке
+      if (result.success === false || result.status === 'error') {
+        console.error('[Webhook] 1C returned error in response:', result);
+        return false;
+      }
+      
+      console.log('[Webhook] ✅ Заявка успешно отправлена в 1C');
       return true;
-    } catch (directError) {
-      console.warn('Direct fetch failed, trying sendBeacon:', directError);
-      
-      // Последняя попытка через sendBeacon (работает даже при CORS)
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(webhookData)], { type: 'application/json' });
-        const sent = navigator.sendBeacon(WEBHOOK_DIRECT_URL, blob);
-        if (sent) {
-          console.log('✅ Webhook sent via sendBeacon');
-          if (typeof window !== 'undefined') {
-            (window as any).__lastWebhookMethod = 'sendBeacon';
-          }
-          return sent;
-        }
+    } catch (error) {
+      console.error('[Webhook] Error sending lead to 1C:', error);
+      if (error instanceof Error) {
+        console.error('[Webhook] Error message:', error.message);
+        console.error('[Webhook] Error stack:', error.stack);
       }
-      
       return false;
     }
   } catch (error) {
@@ -215,7 +208,10 @@ export const sendToWebhook = async (
 };
 
 // URL вебхука для клуба Южный
-// КАК В OPEN-POOL.RU: В dev используем прокси, в production - прямой URL с no-cors
-const WEBHOOK_URL = '/api/webhook';
-const WEBHOOK_DIRECT_URL = 'https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e';
+// КАК В FCRIVERCLUB.RU: Используем прокси как основной метод
+// В dev режиме: Vite проксирует `/api/webhook` → прямой URL 1С
+// В production: Nginx проксирует `/api/webhook.php` → PHP прокси → 1С
+// Прокси возвращает полный ответ от 1С, можно проверить реальные ошибки
+const isDev = typeof import.meta !== 'undefined' && (import.meta as any).env?.MODE === 'development';
+const WEBHOOK_URL = isDev ? '/api/webhook' : '/api/webhook.php';
 export const WEBHOOK_URL_SOUTH = WEBHOOK_URL; // Для обратной совместимости
