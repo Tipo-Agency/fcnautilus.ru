@@ -17,73 +17,11 @@ server {
     access_log /var/log/nginx/new.fcnautilus.ru.access.log;
     error_log /var/log/nginx/new.fcnautilus.ru.error.log;
 
-    # PHP обработка для /api/webhook.php - ВАЖНО: должен быть ПЕРЕД location /
-    location ~ ^/api/.*\.php$ {
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;  # Или php8.2-fpm.sock / php7.4-fpm.sock - зависит от версии
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include fastcgi_params;
-        
-        # CORS заголовки
-        add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' 'Content-Type' always;
-        
-        # Обработка OPTIONS (preflight)
-        if ($request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'Content-Type' always;
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain; charset=utf-8';
-            add_header 'Content-Length' 0;
-            return 204;
-        }
-    }
-
     # Статические файлы - обрабатываем первыми
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
         try_files $uri =404;
-    }
-
-    # Прокси для webhook 1С через nginx (запасной вариант) - ВАЖНО: должен быть ПЕРЕД location /
-    # Используем точное совпадение = для избежания конфликтов
-    location = /api/webhook {
-        # Обработка OPTIONS для CORS
-        if ($request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'Content-Type' always;
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain; charset=utf-8';
-            add_header 'Content-Length' 0;
-            return 204;
-        }
-        
-        # Проксирование на 1C webhook
-        proxy_pass https://cloud.1c.fitness/api/hs/lead/Webhook/6538ea95-c58a-45bf-a73d-844677185d8e;
-        
-        # Заголовки для проксирования
-        proxy_set_header Host cloud.1c.fitness;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        
-        # Обязательно для POST запросов
-        proxy_buffering off;
-        proxy_request_buffering off;
-        
-        # SSL настройки
-        proxy_ssl_server_name on;
-        proxy_ssl_verify off;
-        proxy_http_version 1.1;
-        
-        # CORS заголовки для ответа
-        add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' 'Content-Type' always;
     }
 
     # Явно указываем index.html - без try_files чтобы избежать цикла

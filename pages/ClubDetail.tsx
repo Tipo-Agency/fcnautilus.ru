@@ -23,7 +23,7 @@ import {
 import { CLUBS, SERVICES } from '../constants';
 import Philosophy from '../components/home/Philosophy';
 import { ClubCard } from '../types';
-import { sendToWebhook, WEBHOOK_URL_SOUTH } from '../utils/webhook';
+import { sendLeadTo1C } from '../services/leadService';
 import { formatPhoneNumber, getPhoneDigits, isValidPhone } from '../utils/phoneMask';
 
 const ClubDetail: React.FC = () => {
@@ -305,38 +305,26 @@ const ClubDetail: React.FC = () => {
                     return;
                   }
                   
-                  // Отправка на вебхук только для клуба Южный
-                  if (club.id === 'nautilus-south') {
-                    setIsSubmittingGift(true);
-                    try {
-                      const phoneDigits = getPhoneDigits(giftFormData.phone);
-                      const success = await sendToWebhook(
-                        {
-                          name: giftFormData.name.trim(),
-                          phone: phoneDigits,
-                          comment: 'Заявка на получение подарка (60 дней)',
-                        },
-                        WEBHOOK_URL_SOUTH
-                      );
+                  setIsSubmittingGift(true);
+                  try {
+                    const phoneDigits = getPhoneDigits(giftFormData.phone);
+                    const result = await sendLeadTo1C({
+                      name: giftFormData.name.trim(),
+                      phone: phoneDigits,
+                      comment: 'Заявка на получение подарка (60 дней)',
+                    });
 
-                      if (success) {
-                        console.log('Gift form submitted successfully to 1C');
-                        alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
-                        setGiftFormData({ name: '', phone: '' });
-                      } else {
-                        alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38');
-                      }
-                    } catch (error) {
-                      console.error('Error submitting gift form:', error);
-                      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
-                      alert(`Произошла ошибка при отправке заявки: ${errorMessage}. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38`);
-                    } finally {
-                      setIsSubmittingGift(false);
+                    if (result.success) {
+                      alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
+                      setGiftFormData({ name: '', phone: '' });
+                    } else {
+                      alert(result.message || 'Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38');
                     }
-                  } else {
-                    // Для других клубов просто показываем сообщение
-                    alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
-                    setGiftFormData({ name: '', phone: '' });
+                  } catch (error) {
+                    console.error('Error submitting gift form:', error);
+                    alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз или свяжитесь с нами по телефону +7 (4212) 95-09-38');
+                  } finally {
+                    setIsSubmittingGift(false);
                   }
                 }}
                 className="space-y-6 mt-12"
