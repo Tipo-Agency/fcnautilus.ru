@@ -52,10 +52,23 @@ const Home: React.FC = () => {
               <h1 className="text-[14vw] sm:text-[12vw] md:text-[11vw] lg:text-[12vw] font-black leading-none mb-6 md:mb-4 outline-text tracking-tighter italic uppercase text-center">
                 БЕЗГРАНИЧНАЯ
               </h1>
-              <h1 className="text-[12vw] sm:text-[10vw] md:text-[9vw] lg:text-[10vw] font-black leading-none mb-10 tracking-tighter uppercase -mt-6 sm:-mt-8 md:-mt-20 lg:-mt-24 text-center">
+              <h1 className="text-[12vw] sm:text-[10vw] md:text-[9vw] lg:text-[10vw] font-black leading-none tracking-tighter uppercase -mt-6 sm:-mt-8 md:-mt-20 lg:-mt-24 text-center">
                 СИЛА И <span className="text-nautilus">МОЩЬ</span>
               </h1>
             </div>
+
+            {/* Offer block */}
+            <div className="flex flex-col items-center mt-8 mb-8">
+              <div className="inline-flex flex-col items-center gap-2 px-8 py-4 border border-white/20 bg-black/40 backdrop-blur-sm rounded-2xl">
+                <span className="text-2xl md:text-3xl font-black italic uppercase tracking-tight">
+                  ФИТНЕС ОТ <span className="text-nautilus">2 535</span> РУБ/МЕС
+                </span>
+                <span className="text-white/50 text-xs font-medium italic tracking-wide">
+                  подробности акции у администратора и по телефону 95-09-38
+                </span>
+              </div>
+            </div>
+
             <div className="flex flex-col md:flex-row gap-8 justify-center items-center relative z-20">
               <button
                 onClick={(e) => {
@@ -80,7 +93,7 @@ const Home: React.FC = () => {
                 onMouseLeave={() => setIsHeroButtonHovered(false)}
               >
                 <span style={{ color: isHeroButtonHovered ? '#372da5' : 'white', transition: 'color 0.3s' }}>
-                  ПРИСОЕДИНИТЬСЯ К КЛУБУ
+                  ПОЛУЧИТЬ ПРЕДЛОЖЕНИЕ
                 </span>
               </button>
               <Link to="/tour3d" className="flex items-center gap-4 group relative z-20 cursor-pointer pointer-events-auto">
